@@ -76,6 +76,7 @@ void build_info_print(){
 }
 
 void app_info(int usage){
+    printf("SEIS-EIKONAL v0.1-POC (Proof of Concept) \nAuthor: Alexandr Nikitin, IPGG SB RAS\n");
 #ifndef BIN_NAME
     char *BIN_NAME = "[UNDEFINED]";
 #endif
@@ -83,11 +84,11 @@ void app_info(int usage){
 #ifndef IMP_FSM3D
     char *IMP_FSM3D = "[UNDEFINED]";
 #endif
-    if(usage){
-        printf("Usage: %s NI NJ NK BSIZE_I BSIZE_J BSIZE_K\n\n",BIN_NAME);
-    }
     printf("IMP_FSM3D: %s\n",IMP_FSM3D);
     build_info_print();
+    if(usage){
+        printf("\nUsage: %s NI NJ NK BSIZE_I BSIZE_J BSIZE_K\n\t[NI x NJ x NK] - grid size\n\t[BSIZE_I x BSIZE_J x BSIZE_K] - task size\n",BIN_NAME);
+    }
 }
 
 int main(int argc, char *argv[]){
