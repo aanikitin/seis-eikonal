@@ -76,7 +76,7 @@ void build_info_print(){
 }
 
 void app_info(int usage){
-    printf("SEIS-EIKONAL v0.1-POC (Proof of Concept) \nAuthor: Alexandr Nikitin, IPGG SB RAS\n");
+    printf("SEIS-EIKONAL v0.1-POC (Proof of Concept) \nAuthor: Alexandr Nikitin, IPGG SB RAS\nTest: constant velocity, source in the center of domain\n");
 #ifndef BIN_NAME
     char *BIN_NAME = "[UNDEFINED]";
 #endif
