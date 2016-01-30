@@ -25,5 +25,5 @@ Alexandr Nikitin -  PhD student, junior researcher, IPGG SB RAS - parallel
 algorithm and software development. 
 Anton Duchkov, PhD - head of laboratory, IPGG SB RAS - PhD thesis advisor 
 (geophysics). 
-Alexandr Serdykov, PhD - researcher, IPGG SB RAS - consultant (numerical 
+Alexandr Serdyukov, PhD - researcher, IPGG SB RAS - consultant (numerical 
 methods).
