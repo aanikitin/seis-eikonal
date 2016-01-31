@@ -134,7 +134,12 @@ int main(int argc, char *argv[]){
 
     OMP_MAX_THREADS = omp_get_max_threads();
     printf("OMP_MAX_THREADS: %i\n",OMP_MAX_THREADS);
+
+#if defined(_WIN32) || defined(_WIN64)
+	printf("SRC: [%Iu,%Iu,%Iu]\n",SRCI,SRCJ,SRCK);
+#else
     printf("SRC: [%zu,%zu,%zu]\n",SRCI,SRCJ,SRCK);
+#endif
 
     ex1_init(F, NI, NJ, NK);
     FSM3DInit(U, NI, NJ, NK, SRCI,SRCJ,SRCK);
@@ -146,9 +151,16 @@ int main(int argc, char *argv[]){
 
     printf("====================================================\n");
     printf("NI,NJ,NK,OMP_MAX_THREADS,max_iter,it,converged,sec,L1(MAE),L2(MSE),L_inf,BSIZE_I,BSIZE_J,BSIZE_K\n");
-    printf("%zu,%zu,%zu,%i,%i,%i,%i,%f,%e,%e,%e,%zu,%zu,%zu\n",
-           NI,NJ,NK,OMP_MAX_THREADS,max_iter,it,converged,
-           (t2 - t1),L1,L2,Linf,BSIZE_I,BSIZE_J,BSIZE_K);
+    
+#if defined(_WIN32) || defined(_WIN64)
+	printf("%Iu,%Iu,%Iu,%i,%i,%i,%i,%f,%e,%e,%e,%Iu,%Iu,%Iu\n",
+		NI,NJ,NK,OMP_MAX_THREADS,max_iter,it,converged,
+		(t2 - t1),L1,L2,Linf,BSIZE_I,BSIZE_J,BSIZE_K);
+#else
+	printf("%zu,%zu,%zu,%i,%i,%i,%i,%f,%e,%e,%e,%zu,%zu,%zu\n",
+		NI, NJ, NK, OMP_MAX_THREADS, max_iter, it, converged,
+		(t2 - t1), L1, L2, Linf, BSIZE_I, BSIZE_J, BSIZE_K);
+#endif
 
     return EXIT_SUCCESS;
 }
