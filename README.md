@@ -1,6 +1,6 @@
-# SEIS-EIKONAL 0.1-POC
+# SEIS-EIKONAL
 
-Proof of Concept version
+**work in progress, not for production use**
 
 Eikonal equation solver for calculating first-arrival traveltimes of seismic 
 waves currently based on parallel implementation of the FSM algorithm. Two new 
@@ -14,11 +14,7 @@ approach becoming faster during increased system load.
 
 This is a work in progress. We are currently preparing an article with detailed 
 description of the proposed algorithms and in-depth testing, and are planning 
-to submit it for review and publication in the first half of 2016. In the 
-meantime new major versions of the project will be uploaded to Zenodo.org 
-repository. **If you are planning to use our proposed algorithms in your 
-research before we had a chance to publish an article, please cite our research 
-using DOIs for our source code uploaded to Zenodo**. Thank you.
+to submit it for review and publication in the first half of 2016.
 
 Authors:
 Alexandr Nikitin -  PhD student, junior researcher, IPGG SB RAS - parallel 

@@ -1,23 +1,20 @@
-/** @file fsm_openmp_v2.c
- *  @brief FSM3D OpenMP first proposed parallel implementation using
- *  static scheduling.
- *
- *  @author Alexandr Nikitin
- */
+#include "openst/eikonal/fsm.h"
 
-#include "fsm.h"
-
-#define DEBUG_LOG 0
-
-extern size_t BSIZE_I;
-extern size_t BSIZE_J;
-extern size_t BSIZE_K;
+#define M_FSM3D_IMP_NAME "fsm3d_bfsm_openmp_v3.c"
 
 
-int FSM3D(double *U, double *F, double H, size_t NI, size_t NJ, size_t NK,
-          size_t SRCI, size_t SRCJ, size_t SRCK, int max_iter, int *converged){
+const char OPENST_FSM3D_IMP_NAME[] = M_FSM3D_IMP_NAME;
+const size_t OPENST_FSM3D_IMP_NAME_LENGTH = sizeof(M_FSM3D_IMP_NAME);
 
-    int total_it, it, notconvergedl, order;
+
+int OpenST_FSM3D_ComputePartial(double *U, double *V, double H,
+                                size_t NI, size_t NJ, size_t NK,
+                                size_t SRCI, size_t SRCJ, size_t SRCK,
+                                int start_iter, int max_iter, int *converged,
+                                size_t BSIZE_I, size_t BSIZE_J, size_t BSIZE_K,
+                                double EPS){
+
+    int total_it, it, notconvergedl;
     int REVI, REVJ, REVK;
     int nth, tid, notconvergedt;
 
@@ -25,7 +22,11 @@ int FSM3D(double *U, double *F, double H, size_t NI, size_t NJ, size_t NK,
     int tid_last, done, nth_max, nth_limit;
     size_t bls_rem, bi, bj, bk, ts;
 
-    total_it = 0;
+    if(start_iter >= max_iter){
+        return max_iter;
+    }
+
+    total_it = start_iter;
     notconvergedl = 0;
 
     NBI = NI/BSIZE_I + (NI % BSIZE_I > 0);
@@ -42,8 +43,8 @@ int FSM3D(double *U, double *F, double H, size_t NI, size_t NJ, size_t NK,
 #pragma omp parallel num_threads(nth_limit) default(none) \
     shared(BSIZE_I, BSIZE_J, BSIZE_K, nth, NLBI, NBI, NBJ, NBK, total_it, notconvergedl, \
     NI, NJ, NK, SRCI, SRCJ, SRCK, \
-    U, F, H, max_iter, NBLS, NTS, tid_last) \
-    private(tid, it, notconvergedt, order, \
+    U, V, H, max_iter, NBLS, NTS, tid_last, EPS, start_iter) \
+    private(tid, it, notconvergedt, \
     REVI, REVJ, REVK, ts, bls_rem, \
     bi, bj, bk, done)
     {
@@ -59,7 +60,7 @@ int FSM3D(double *U, double *F, double H, size_t NI, size_t NJ, size_t NK,
 
         tid = omp_get_thread_num();
 
-        for(it = 0; it < max_iter; ++it){
+        for(it = start_iter; it < max_iter; ++it){
 
 #pragma omp single nowait
             {
@@ -69,22 +70,7 @@ int FSM3D(double *U, double *F, double H, size_t NI, size_t NJ, size_t NK,
 
             notconvergedt = 0;
 
-            order = it % 8;
-            if(order & 4){
-                REVI = 1;
-            } else {
-                REVI = 0;
-            }
-            if(order & 2){
-                REVJ = 1;
-            } else {
-                REVJ = 0;
-            }
-            if(order & 1){
-                REVK = 1;
-            } else {
-                REVK = 0;
-            }
+            OpenST_FSM3D_GetSweepOrder(it, &REVI, &REVJ, &REVK);
 
             bi = tid;
             bj = 0;
@@ -98,12 +84,14 @@ int FSM3D(double *U, double *F, double H, size_t NI, size_t NJ, size_t NK,
                     if(bls_rem){
                         --bls_rem;
                     } else {
-
-                        if(FSM3D_serial(U, F, H, NI, NJ, NK,
-                                        SRCI, SRCJ, SRCK,
-                                        REVI, REVJ, REVK,
-                                        bi * BSIZE_I, bj * BSIZE_J, bk * BSIZE_K,
-                                        BSIZE_I, BSIZE_J, BSIZE_K)){
+                        
+                        if(OpenST_FSM3D_BlockSerial(U, V, H, NI, NJ, NK,
+                                                    SRCI, SRCJ, SRCK,
+                                                    REVI, REVJ, REVK,
+                                                    bi * BSIZE_I, bj * BSIZE_J,
+                                                    bk * BSIZE_K,
+                                                    BSIZE_I, BSIZE_J, BSIZE_K,
+                                                    EPS)){
                             notconvergedt = 1;
                         }
 
@@ -142,3 +130,18 @@ int FSM3D(double *U, double *F, double H, size_t NI, size_t NJ, size_t NK,
     *converged = (notconvergedl == 0);
     return total_it;
 }
+
+
+int OpenST_FSM3D_Compute(double *U, double *V, double H,
+                         size_t NI, size_t NJ, size_t NK,
+                         size_t SRCI, size_t SRCJ, size_t SRCK,
+                         int max_iter, int *converged,
+                         size_t BSIZE_I, size_t BSIZE_J, size_t BSIZE_K,
+                         double EPS){
+    return OpenST_FSM3D_ComputePartial(U, V, H,
+                                       NI, NJ, NK,
+                                       SRCI, SRCJ, SRCK,
+                                       0, max_iter, converged,
+                                       BSIZE_I, BSIZE_J, BSIZE_K, EPS);
+}
+
