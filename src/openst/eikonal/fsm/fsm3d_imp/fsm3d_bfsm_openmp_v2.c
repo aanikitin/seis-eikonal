@@ -66,7 +66,7 @@ int OpenST_FSM3D_ComputePartial(double *U, double *V, double H,
                     I1 = (NBJ - 1 < level) ? (level - NBJ + 1) : 0;
                     I2 = (NBI - 1 > level) ? level : NBI - 1;
 
-#pragma omp for nowait schedule(runtime)
+#pragma omp for nowait schedule(dynamic,1)
                     for(ir = I1; ir <= I2; ++ir){
                         jr = level - ir;
 

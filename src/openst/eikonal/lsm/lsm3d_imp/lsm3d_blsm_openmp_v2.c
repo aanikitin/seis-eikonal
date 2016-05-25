@@ -14,13 +14,16 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
                                 size_t BSIZE_I, size_t BSIZE_J, size_t BSIZE_K,
                                 double EPS){
 
-    int total_it, it, notconvergedl;
+    int total_it, it, notconvergedl, notconvergedt;
     int REVI, REVJ, REVK;
-    int nth, tid, notconvergedt;
+    size_t NBI, NBJ, NBK;
 
-    size_t NLBI, NBLS, NTS, NBI, NBJ, NBK;
-    int tid_last, done, nth_max, nth_limit;
-    size_t bls_rem, bi, bj, bk, ts;
+#if (_OPENMP > 200203)
+    size_t levelr, K1, K2, kr, level, I1, I2, ir, jr;
+#else
+#warning size_t downcast to ptrdiff_t due to missing OpenMP 3.0 support
+    ptrdiff_t levelr, K1, K2, kr, level, I1, I2, ir, jr;
+#endif
 
     if(start_iter >= max_iter){
         return max_iter;
@@ -28,40 +31,19 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
 
     total_it = start_iter;
     notconvergedl = 0;
-
+    
     NBI = NI/BSIZE_I + (NI % BSIZE_I > 0);
     NBJ = NJ/BSIZE_J + (NJ % BSIZE_J > 0);
     NBK = NK/BSIZE_K + (NK % BSIZE_K > 0);
 
-    nth_max = omp_get_max_threads();
-    if(nth_max > NBI){
-        nth_limit = NBI;
-    } else {
-        nth_limit = nth_max;
-    }
-
-#pragma omp parallel num_threads(nth_limit) default(none) \
-    shared(BSIZE_I, BSIZE_J, BSIZE_K, nth, NLBI, NBI, NBJ, NBK, total_it, notconvergedl, \
-    NI, NJ, NK, SRCI, SRCJ, SRCK, \
-    U, LSM_UNLOCKED, V, H, max_iter, NBLS, NTS, tid_last, EPS, start_iter) \
-    private(tid, it, notconvergedt, \
-    REVI, REVJ, REVK, ts, bls_rem, \
-    bi, bj, bk, done)
+#pragma omp parallel default(none) \
+    shared(BSIZE_I, BSIZE_J, BSIZE_K, NBI, NBJ, NBK, \
+    start_iter, total_it, notconvergedl, NI, NJ, NK, SRCI, SRCJ, SRCK, \
+    U, LSM_UNLOCKED, V, H, max_iter, EPS) \
+    private(it, REVI, REVJ, REVK, notconvergedt, \
+    levelr, K1, K2, level, I1, I2, ir, jr, kr)
     {
-
-#pragma omp single
-        {
-            nth = omp_get_num_threads();
-            NLBI = NBI/nth + (NBI % nth > 0);
-            tid_last = (NBI % nth > 0) ? NBI % nth - 1 : nth - 1;
-            NBLS = (NBK * NBJ > nth) ? 0 : (nth - NBK * NBJ);
-            NTS = tid_last + NLBI * NBK * NBJ + (NLBI - 1) * NBLS;
-        }
-
-        tid = omp_get_thread_num();
-
         for(it = start_iter; it < max_iter; ++it){
-
 #pragma omp single nowait
             {
                 ++total_it;
@@ -72,61 +54,47 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
 
             OpenST_FSM3D_GetSweepOrder(it, &REVI, &REVJ, &REVK);
 
-            bi = tid;
-            bj = 0;
-            bk = 0;
-            bls_rem = tid;
-            done = 0;
+            for(levelr = 0; levelr < NBI + NBJ + NBK - 2; ++levelr){
 
-            for(ts = 0; ts < NTS; ++ts){
+                K1 = (NBI + NBJ - 2 < levelr) ?
+                            (levelr - NBI - NBJ + 2) : 0;
+                K2 = (NBK - 1 > levelr) ? levelr : NBK - 1;
 
-                if(!done){
-                    if(bls_rem){
-                        --bls_rem;
-                    } else {
-                        
-                        if(OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V, H, NI, NJ, NK,
+                for(kr = K1; kr <= K2; ++kr){
+                    level = levelr - kr;
+
+                    I1 = (NBJ - 1 < level) ? (level - NBJ + 1) : 0;
+                    I2 = (NBI - 1 > level) ? level : NBI - 1;
+
+#pragma omp for nowait schedule(dynamic,1)
+                    for(ir = I1; ir <= I2; ++ir){
+                        jr = level - ir;
+
+                        if(OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V, H,
+                                                    NI, NJ, NK,
                                                     SRCI, SRCJ, SRCK,
                                                     REVI, REVJ, REVK,
-                                                    bi * BSIZE_I, bj * BSIZE_J,
-                                                    bk * BSIZE_K,
+                                                    ir * BSIZE_I, jr * BSIZE_J,
+                                                    kr * BSIZE_K,
                                                     BSIZE_I, BSIZE_J, BSIZE_K,
                                                     EPS)){
                             notconvergedt = 1;
                         }
-
-                        //update block index
-                        ++bk;
-                        if(bk == NBK){
-                            bk = 0;
-                            ++bj;
-                            if(bj == NBJ){
-                                bj = 0;
-                                bls_rem = NBLS;
-                                bi += nth;
-                                if(bi >= NBI){
-                                    done = 1;
-                                }
-                            }
-                        }
-
                     }
                 }
-
 #pragma omp barrier
-            }
 
+            }
 #pragma omp atomic
             notconvergedl += notconvergedt;
 #pragma omp barrier
-#pragma omp flush(notconvergedl)
+#pragma omp flush (notconvergedl)
             if(!notconvergedl){
                 break;
             }
 #pragma omp barrier
         }
     }
-
     *converged = (notconvergedl == 0);
     return total_it;
 }
