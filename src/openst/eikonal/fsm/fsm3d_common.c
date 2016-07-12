@@ -1,9 +1,13 @@
 #include "openst/eikonal/fsm.h"
 
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
+
 void OpenST_FSM3D_SuggestBlockSize(size_t NI, size_t NJ, size_t NK, 
-                              size_t *BSIZE_I, size_t *BSIZE_J,
-                              size_t *BSIZE_K){
+                                   size_t *BSIZE_I, size_t *BSIZE_J,
+                                   size_t *BSIZE_K){
     /* TODO: heuristic to determine optimal block size
      * (based on profiling maybe) */
     *BSIZE_I = 1;
@@ -33,7 +37,7 @@ void OpenST_FSM3D_GetSweepOrder(int it, int *REVI, int *REVJ, int *REVK){
 
 
 void OpenST_FSM3D_Init(double *U, size_t NI, size_t NJ, size_t NK,
-                size_t SRCI, size_t SRCJ, size_t SRCK){
+                       size_t SRCI, size_t SRCJ, size_t SRCK){
     size_t i, j, k;
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
@@ -47,10 +51,10 @@ void OpenST_FSM3D_Init(double *U, size_t NI, size_t NJ, size_t NK,
 
 
 int OpenST_FSM3D_NodeUpdate(double *U, double *V, double H,
-                      size_t NI, size_t NJ, size_t NK,
-                      size_t SRCI, size_t SRCJ, size_t SRCK,
-                      int REVI, int REVJ, int REVK,
-                      size_t ir, size_t jr, size_t kr, double EPS){
+                            size_t NI, size_t NJ, size_t NK,
+                            size_t SRCI, size_t SRCJ, size_t SRCK,
+                            int REVI, int REVJ, int REVK,
+                            size_t ir, size_t jr, size_t kr, double EPS){
 
     size_t i,j,k;
     size_t mem_cur, mem_il, mem_ir, mem_jl, mem_jr, mem_kl, mem_kr;
@@ -118,19 +122,19 @@ int OpenST_FSM3D_NodeUpdate(double *U, double *V, double H,
     a3 = uzmin;
     
     if(a1 > a3){
-      t = a3;
-      a1 = a3;
-      a3 = t;
+        t = a3;
+        a1 = a3;
+        a3 = t;
     }
     if(a1 > a2){
-      t = a1;
-      a1 = a2;
-      a2 = t;
+        t = a1;
+        a1 = a2;
+        a2 = t;
     }
     if(a2 > a3){
-      t = a3;
-      a3 = a2;
-      a2 = t;
+        t = a3;
+        a3 = a2;
+        a2 = t;
     }
 
     t1 = a1 - a2;
@@ -161,24 +165,32 @@ int OpenST_FSM3D_NodeUpdate(double *U, double *V, double H,
 
 
 int OpenST_FSM3D_BlockSerial(double *U, double *V, double H,
-                       size_t NI, size_t NJ, size_t NK,
-                       size_t SRCI, size_t SRCJ, size_t SRCK,
-                       int REVI, int REVJ, int REVK,
-                       size_t istart, size_t jstart, size_t kstart,
-                       size_t isize, size_t jsize, size_t ksize, double EPS){
+                             size_t NI, size_t NJ, size_t NK,
+                             size_t SRCI, size_t SRCJ, size_t SRCK,
+                             int REVI, int REVJ, int REVK,
+                             size_t istart, size_t jstart, size_t kstart,
+                             size_t isize, size_t jsize, size_t ksize, double EPS){
 
     int notconverged;
-    size_t ir, jr, kr;
+    size_t i, j, ir, jr, kr, iend, jend, kend;
+
+    iend = MIN(istart + isize, NI);
+    jend = MIN(jstart + jsize, NJ);
+    kend = MIN(kstart + ksize, NK);
 
     notconverged = 0;
-    for(ir = istart; ir < istart + isize && ir < NI; ++ir){
-        for(jr = jstart; jr < jstart + jsize && jr < NJ; ++jr){
-            for(kr = kstart; kr < kstart + ksize && kr < NK; ++kr){
-                if(OpenST_FSM3D_NodeUpdate(U, V, H, NI, NJ, NK,
-                                     SRCI, SRCJ, SRCK,
-                                     REVI, REVJ, REVK,
-                                     ir, jr, kr, EPS)){
-                    notconverged = 1;
+    for(ir = istart; ir < iend; ir += 2u){
+        for(jr = jstart; jr < jend; jr += 2u){
+            for(i = ir; (i < (ir + 2u)) && (i < iend); ++i){
+                for(j = jr; (j < (jr + 2u)) && (j < jend); ++j){
+                    for(kr = kstart; kr < kend; ++kr){
+                        if(OpenST_FSM3D_NodeUpdate(U, V, H, NI, NJ, NK,
+                                                   SRCI, SRCJ, SRCK,
+                                                   REVI, REVJ, REVK,
+                                                   i, j, kr, EPS)){
+                            notconverged = 1;
+                        }
+                    }
                 }
             }
         }

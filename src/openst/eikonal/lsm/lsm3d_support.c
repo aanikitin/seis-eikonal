@@ -1,8 +1,12 @@
 #include "openst/eikonal/lsm.h"
 
 
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
+
+
 void OpenST_LSM3D_Init(double *U, char *LSM_UNLOCKED, size_t NI, size_t NJ, size_t NK,
-                size_t SRCI, size_t SRCJ, size_t SRCK){
+                       size_t SRCI, size_t SRCJ, size_t SRCK){
     size_t i, j, k;
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
@@ -35,10 +39,10 @@ void OpenST_LSM3D_Init(double *U, char *LSM_UNLOCKED, size_t NI, size_t NJ, size
 
 
 int OpenST_LSM3D_NodeUpdate(double *U, char *LSM_UNLOCKED, double *V, double H,
-                      size_t NI, size_t NJ, size_t NK,
-                      size_t SRCI, size_t SRCJ, size_t SRCK,
-                      int REVI, int REVJ, int REVK,
-                      size_t ir, size_t jr, size_t kr, double EPS){
+                            size_t NI, size_t NJ, size_t NK,
+                            size_t SRCI, size_t SRCJ, size_t SRCK,
+                            int REVI, int REVJ, int REVK,
+                            size_t ir, size_t jr, size_t kr, double EPS){
 
     size_t i,j,k;
     size_t mem_cur, mem_il, mem_ir, mem_jl, mem_jr, mem_kl, mem_kr;
@@ -214,26 +218,34 @@ int OpenST_LSM3D_NodeUpdate(double *U, char *LSM_UNLOCKED, double *V, double H,
 
 
 int OpenST_LSM3D_BlockSerial(double *U, char *LSM_UNLOCKED, double *V, double H,
-                       size_t NI, size_t NJ, size_t NK,
-                       size_t SRCI, size_t SRCJ, size_t SRCK,
-                       int REVI, int REVJ, int REVK,
-                       size_t istart, size_t jstart, size_t kstart,
-                       size_t isize, size_t jsize, size_t ksize,
-                       double EPS){
+                             size_t NI, size_t NJ, size_t NK,
+                             size_t SRCI, size_t SRCJ, size_t SRCK,
+                             int REVI, int REVJ, int REVK,
+                             size_t istart, size_t jstart, size_t kstart,
+                             size_t isize, size_t jsize, size_t ksize,
+                             double EPS){
 
     int notconverged;
-    size_t ir, jr, kr;
+    size_t i, j, ir, jr, kr, iend, jend, kend;
+
+    iend = MIN(istart + isize, NI);
+    jend = MIN(jstart + jsize, NJ);
+    kend = MIN(kstart + ksize, NK);
 
     notconverged = 0;
-    for(ir = istart; ir < istart + isize && ir < NI; ++ir){
-        for(jr = jstart; jr < jstart + jsize && jr < NJ; ++jr){
-            for(kr = kstart; kr < kstart + ksize && kr < NK; ++kr){
-                if(OpenST_LSM3D_NodeUpdate(U, LSM_UNLOCKED, V, H,
-                                     NI, NJ, NK,
-                                     SRCI, SRCJ, SRCK,
-                                     REVI, REVJ, REVK,
-                                     ir, jr, kr, EPS)){
-                    notconverged = 1;
+    for(ir = istart; ir < iend; ir += 2u){
+        for(jr = jstart; jr < jend; jr += 2u){
+            for(i = ir; (i < (ir + 2u)) && (i < iend); ++i){
+                for(j = jr; (j < (jr + 2u)) && (j < jend); ++j){
+                    for(kr = kstart; kr < kend; ++kr){
+                        if(OpenST_LSM3D_NodeUpdate(U, LSM_UNLOCKED, V, H,
+                                                   NI, NJ, NK,
+                                                   SRCI, SRCJ, SRCK,
+                                                   REVI, REVJ, REVK,
+                                                   i, j, kr, EPS)){
+                            notconverged = 1;
+                        }
+                    }
                 }
             }
         }

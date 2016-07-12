@@ -1,3 +1,5 @@
+/* WARNING: For testing purposes only, not for production use */
+
 #include "openst/eikonal/fsm.h"
 
 #define M_FSM3D_IMP_NAME "fsm3d_bfsm_openmp_v3.c"
@@ -6,6 +8,11 @@
 const char OPENST_FSM3D_IMP_NAME[] = M_FSM3D_IMP_NAME;
 const size_t OPENST_FSM3D_IMP_NAME_LENGTH = sizeof(M_FSM3D_IMP_NAME);
 
+#include <pthread.h>
+#include <semaphore.h>
+#include <errno.h>
+
+sem_t *sem;
 
 int OpenST_FSM3D_ComputePartial(double *U, double *V, double H,
                                 size_t NI, size_t NJ, size_t NK,
@@ -16,11 +23,11 @@ int OpenST_FSM3D_ComputePartial(double *U, double *V, double H,
 
     int total_it, it, notconvergedl;
     int REVI, REVJ, REVK;
-    int nth, tid, notconvergedt;
+    int nth, tid, tid_prev, notconvergedt;
 
-    size_t NLBI, NBLS, NTS, NBI, NBJ, NBK;
-    int tid_last, done, nth_max, nth_limit;
-    size_t bls_rem, bi, bj, bk, ts;
+    size_t NBI, NBJ, NBK;
+    int nth_max, nth_limit;
+    size_t bi, bj, bk;
 
     if(start_iter >= max_iter){
         return max_iter;
@@ -41,27 +48,27 @@ int OpenST_FSM3D_ComputePartial(double *U, double *V, double H,
     }
 
 #pragma omp parallel num_threads(nth_limit) default(none) \
-    shared(BSIZE_I, BSIZE_J, BSIZE_K, nth, NLBI, NBI, NBJ, NBK, total_it, notconvergedl, \
+    shared(sem, BSIZE_I, BSIZE_J, BSIZE_K, nth, NBI, NBJ, NBK, total_it, notconvergedl, \
     NI, NJ, NK, SRCI, SRCJ, SRCK, \
-    U, V, H, max_iter, NBLS, NTS, tid_last, EPS, start_iter) \
-    private(tid, it, notconvergedt, \
-    REVI, REVJ, REVK, ts, bls_rem, \
-    bi, bj, bk, done)
+    U, V, H, max_iter, EPS, start_iter) \
+    private(tid, tid_prev, it, notconvergedt, \
+    REVI, REVJ, REVK, \
+    bi, bj, bk)
     {
 
 #pragma omp single
         {
             nth = omp_get_num_threads();
-            NLBI = NBI/nth + (NBI % nth > 0);
-            tid_last = (NBI % nth > 0) ? NBI % nth - 1 : nth - 1;
-            NBLS = (NBK * NBJ > nth) ? 0 : (nth - NBK * NBJ);
-            NTS = tid_last + NLBI * NBK * NBJ + (NLBI - 1) * NBLS;
+            sem = (sem_t *) malloc(sizeof(sem_t) * (nth));
+            for(int i = 0; i < nth; ++i){
+              sem_init(&sem[i], 0, 0);
+            }
         }
 
         tid = omp_get_thread_num();
+        tid_prev = (tid + nth - 1) % nth;
 
         for(it = start_iter; it < max_iter; ++it){
-
 #pragma omp single nowait
             {
                 ++total_it;
@@ -72,19 +79,12 @@ int OpenST_FSM3D_ComputePartial(double *U, double *V, double H,
 
             OpenST_FSM3D_GetSweepOrder(it, &REVI, &REVJ, &REVK);
 
-            bi = tid;
-            bj = 0;
-            bk = 0;
-            bls_rem = tid;
-            done = 0;
-
-            for(ts = 0; ts < NTS; ++ts){
-
-                if(!done){
-                    if(bls_rem){
-                        --bls_rem;
-                    } else {
-                        
+            for(bi = tid; bi < NBI; bi += nth){
+                for(bj = 0; bj < NBJ; ++bj){
+                    for(bk = 0; bk < NBK; ++bk){
+                        if(bi != 0){
+                            sem_wait(&sem[tid_prev]);
+                        }
                         if(OpenST_FSM3D_BlockSerial(U, V, H, NI, NJ, NK,
                                                     SRCI, SRCJ, SRCK,
                                                     REVI, REVJ, REVK,
@@ -94,26 +94,11 @@ int OpenST_FSM3D_ComputePartial(double *U, double *V, double H,
                                                     EPS)){
                             notconvergedt = 1;
                         }
-
-                        //update block index
-                        ++bk;
-                        if(bk == NBK){
-                            bk = 0;
-                            ++bj;
-                            if(bj == NBJ){
-                                bj = 0;
-                                bls_rem = NBLS;
-                                bi += nth;
-                                if(bi >= NBI){
-                                    done = 1;
-                                }
-                            }
+                        if(bi != (NBI - 1)){
+                            sem_post(&sem[tid]);
                         }
-
                     }
                 }
-
-#pragma omp barrier
             }
 
 #pragma omp atomic
@@ -124,6 +109,13 @@ int OpenST_FSM3D_ComputePartial(double *U, double *V, double H,
                 break;
             }
 #pragma omp barrier
+        }
+
+#pragma omp single
+        {
+            for(int i = 0; i < nth; ++i){
+              sem_destroy(&sem[i]);
+            }
         }
     }
 
@@ -144,4 +136,3 @@ int OpenST_FSM3D_Compute(double *U, double *V, double H,
                                        0, max_iter, converged,
                                        BSIZE_I, BSIZE_J, BSIZE_K, EPS);
 }
-
