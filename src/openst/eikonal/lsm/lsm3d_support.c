@@ -104,6 +104,7 @@ int OpenST_LSM3D_NodeUpdate(double *U, char *LSM_UNLOCKED, double *V, double H,
             uzmin = fmin(U[mem_kl], U[mem_kr]);
         }
 
+        /* in LSM tests this is actually slightly faster than sorting network on swaps */
         if (uxmin <= uymin && uxmin <= uzmin){
             a1 = uxmin;
             if (uymin <= uzmin){

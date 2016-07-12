@@ -54,7 +54,7 @@ int OpenST_FSM3D_NodeUpdate(double *U, double *V, double H,
 
     size_t i,j,k;
     size_t mem_cur, mem_il, mem_ir, mem_jl, mem_jr, mem_kl, mem_kr;
-    double uold, uxmin, uymin, uzmin, a1, a2, a3, t1, t2, t3, unew;
+    double uold, uxmin, uymin, uzmin, a1, a2, a3, t, t1, t2, t3, unew;
     int notconverged;
 
     notconverged = 0;
@@ -113,33 +113,24 @@ int OpenST_FSM3D_NodeUpdate(double *U, double *V, double H,
         uzmin = fmin(U[mem_kl], U[mem_kr]);
     }
 
-    if (uxmin <= uymin && uxmin <= uzmin){
-        a1 = uxmin;
-        if (uymin <= uzmin){
-            a2 = uymin;
-            a3 = uzmin;
-        } else {
-            a2 = uzmin;
-            a3 = uymin;
-        }
-    } else if (uymin <= uxmin && uymin <= uzmin){
-        a1 = uymin;
-        if (uxmin <= uzmin){
-            a2 = uxmin;
-            a3 = uzmin;
-        } else {
-            a2 = uzmin;
-            a3 = uxmin;
-        }
-    } else {
-        a1 = uzmin;
-        if (uxmin <= uymin){
-            a2 = uxmin;
-            a3 = uymin;
-        } else {
-            a2 = uymin;
-            a3 = uxmin;
-        }
+    a1 = uxmin;
+    a2 = uymin;
+    a3 = uzmin;
+    
+    if(a1 > a3){
+      t = a3;
+      a1 = a3;
+      a3 = t;
+    }
+    if(a1 > a2){
+      t = a1;
+      a1 = a2;
+      a2 = t;
+    }
+    if(a2 > a3){
+      t = a3;
+      a3 = a2;
+      a2 = t;
     }
 
     t1 = a1 - a2;
