@@ -15,8 +15,8 @@ set(OPENST_DEFAULT_LSM3D "lsm3d_blsm_openmp_v2.c")
 endif()
 
 cmake_minimum_required(VERSION 2.8)
-set(CMAKE_BUILD_TYPE Release)
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+# set(CMAKE_BUILD_TYPE Release)
+# set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
@@ -37,7 +37,7 @@ message(STATUS "CMAKE_C_COMPILER: ${CMAKE_C_COMPILER} [${CMAKE_C_COMPILER_ID} ${
 
 if(NOT MSVC)
 	if(NOT DEFINED C_FLAGS_OPT)
-          set(C_FLAGS_OPT "-O3" CACHE STRING "Compile optimization flags")
+          set(C_FLAGS_OPT "-O3" CACHE STRING "Compiler optimization flags")
 	endif()
 	set(CMAKE_C_FLAGS "${C_FLAGS_OPT} -Winline -Wall -Wextra -fmessage-length=0 -std=c99 -pedantic -fopenmp ${CMAKE_C_FLAGS}")
 	if(CMAKE_COMPILER_IS_GNUCC)
@@ -47,7 +47,7 @@ if(NOT MSVC)
 	endif()
 elseif(MSVC)
 	if(NOT DEFINED C_FLAGS_OPT)
-	  set(C_FLAGS_OPT "/O2 /arch:AVX" CACHE STRING "Compile optimization flags")
+	  set(C_FLAGS_OPT "/O2" CACHE STRING "Compiler optimization flags")
 	endif()
 	set(CMAKE_C_FLAGS "${C_FLAGS_OPT} /openmp")
 endif()
@@ -129,8 +129,6 @@ else()
 set_target_properties(OPENST_SHARED PROPERTIES OUTPUT_NAME "openst-${OPENST_SOVERSION}")
 endif()
 
-add_subdirectory(test/EIKONAL_EX1 build/test )
-
 # ==== LIBRARIES ====
 # system libs (math etc.)
 if(UNIX)
@@ -138,6 +136,9 @@ if(UNIX)
   target_link_libraries(OPENST_SHARED ${lib_math})
   target_link_libraries(OPENST_STATIC ${lib_math})
 endif()
+
+# ==== TESTS ====
+add_subdirectory(test build/test)
 
 # ==== MISC ====
 # workaround for Qt Creator project tree not showing includes etc.

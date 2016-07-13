@@ -7,26 +7,29 @@
 
 //#define OPENST_LINK_SHARED
 #include "openst.h"
-#include "openst.h"
 
-#define TEST_NAME "EIKONAL_EX1"
+#define EX_NAME "EIKONAL_EX1"
 
-#define BSIZE_DEF 8u
+#define DEFAULT_SIZE 100u
+#define DEFAULT_MAX_ITER 10
+#define DEFAULT_EPS_MULT 0.0
 
-void ex1_init(double *F, size_t NI, size_t NJ, size_t NK){
+
+void ex_init(double *V, size_t NI, size_t NJ, size_t NK){
     size_t i, j, k;
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
             for(k = 0; k < NK; ++k){
-                F[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = 1.0;
+                V[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = 1.0;
             }
         }
     }
 }
 
-void ex1_check(double *U, double H, size_t NI, size_t NJ, size_t NK,
+
+void ex_check(double *U, double H, size_t NI, size_t NJ, size_t NK,
               size_t SRCI, size_t SRCJ, size_t SRCK,
-               double *L1, double *L2, double *Linf){
+              double *L1, double *L2, double *Linf){
     size_t i, j, k, NN;
     double di, dj, dk, dist;
     double diff, l1, l2, linf;
@@ -53,44 +56,51 @@ void ex1_check(double *U, double H, size_t NI, size_t NJ, size_t NK,
     *Linf = linf;
 }
 
+
 void app_info(char *BIN_NAME,int usage){
+    printf("%s\n",OPENST_VERSION_STR_FULL_STATIC);
+    printf("%s\n",OPENST_BUILDINFO_STR_FULL_STATIC);
     if(usage){
-        printf("\nUsage: %s NI NJ NK [BSIZE_I BSIZE_J BSIZE_K]\n\t[NI x NJ x NK] - grid size\n\t[BSIZE_I x BSIZE_J x BSIZE_K] - task size\n",BIN_NAME);
+        printf("Usage: %s NI NJ NK [BSIZE_I BSIZE_J BSIZE_K] [EPS_MULT] [MAX_ITER]\n" \
+               "\t[NI x NJ x NK] - grid size\n" \
+               "\t[BSIZE_I x BSIZE_J x BSIZE_K] - task size\n" \
+               "\t[EPS_MULT] - EPS convergence parameter multiplier\n" \
+               "\t[MAX_ITER] - maximum number of iterations\n"
+               "Running using default values...\n\n",BIN_NAME);
     }
 }
 
+
 int main(int argc, char *argv[]){
     double *U, *V, H;
+    int max_iter;
+    int it, converged;
     double t1,t2;
     double L1, L2, Linf;
-    int it, converged;
-    int max_iter;
     size_t NI, NJ, NK;
     size_t SRCI, SRCJ, SRCK;
     size_t BSIZE_I;
     size_t BSIZE_J;
     size_t BSIZE_K;
     char *LSM_UNLOCKED;
-    double *RAY;
-    size_t RAY_NI, RAY_NJ;
-    size_t RCVI, RCVJ, RCVK;
     int OMP_MAX_THREADS;
     double vmin, vmax, vmean;
-    double EPS, LSM3D_Time, BRT3D_Time, BRT3D_TSTEP;
-    int BRT3D_ERR;
+    double EPS, EPS_MULT, EIK3D_Time, BRT3D_TSTEP;
     const char *IMP_NAME;
-    
-    printf("%s\n",OPENST_VERSION_STR_FULL_STATIC);
-    printf("%s\n",OPENST_BUILDINFO_STR_FULL_STATIC);
+    int usage_flag, errcode;
+
+    NI = DEFAULT_SIZE;
+    NJ = DEFAULT_SIZE;
+    NK = DEFAULT_SIZE;
+    EPS_MULT = DEFAULT_EPS_MULT;
+    max_iter = DEFAULT_MAX_ITER;
+    usage_flag = 1;
 
     if(argc >= 4){
         NI = atoi(argv[1]);
         NJ = atoi(argv[2]);
         NK = atoi(argv[3]);
-        app_info(argv[0],0);
-    } else {
-        app_info(argv[0],1);
-        return EXIT_FAILURE;
+        usage_flag = 0;
     }
 
     if(argc >= 7){
@@ -100,6 +110,16 @@ int main(int argc, char *argv[]){
     } else {
         OpenST_FSM3D_SuggestBlockSize(NI,NJ,NK,&BSIZE_I,&BSIZE_J,&BSIZE_K);
     }
+
+    if(argc >= 8){
+        EPS_MULT = atof(argv[7]);
+    }
+
+    if(argc >= 9){
+        max_iter = atoi(argv[8]);
+    }
+
+    app_info(argv[0],usage_flag);
 
     U = malloc(NI * NJ * NK * sizeof(double));
     assert(U);
@@ -111,67 +131,64 @@ int main(int argc, char *argv[]){
     SRCI = NI/2;
     SRCJ = NJ/2;
     SRCK = NK/2;
-    max_iter = 10;
     H = 2.0/NI;
-    
-    RCVI = 0;
-    RCVJ = 0;
-    RCVK = 0;
 
     OMP_MAX_THREADS = omp_get_max_threads();
-    printf("OMP_MAX_THREADS: %i\n",OMP_MAX_THREADS);
 
-#if defined(_WIN32) || defined(_WIN64)
-	printf("SRC: [%Iu,%Iu,%Iu]\n",SRCI,SRCJ,SRCK);
-#else
-    printf("SRC: [%zu,%zu,%zu]\n",SRCI,SRCJ,SRCK);
-#endif
+    ex_init(V, NI, NJ, NK);
 
-    ex1_init(V, NI, NJ, NK);
-    
-    OpenST_AOP_GetArrStats(V, NI * NJ * NK, &vmin, &vmax, &vmean);
-    
-    BRT3D_TSTEP = OpenST_BRT3D_SuggestTSTEP(vmax, H, H, H);
-    EPS = BRT3D_TSTEP;
-    
-    printf("V[min;max;mean]: [%e;%e;%e]\n",vmin,vmax,vmean);
+    if(EPS_MULT != 0.0){
+        OpenST_AOP_GetArrStats(V, NI * NJ * NK, &vmin, &vmax, &vmean);
+        printf("V[min;max;mean]: [%e;%e;%e]\n",vmin,vmax,vmean);
+        BRT3D_TSTEP = OpenST_BRT3D_SuggestTSTEP(vmax, H, H, H);
+        EPS = BRT3D_TSTEP * EPS_MULT;
+    } else {
+        EPS = 0.0;
+    }
 
 #ifdef LSM3D_IMP
     IMP_NAME = OPENST_LSM3D_IMP_NAME;
     OpenST_LSM3D_Init(U,LSM_UNLOCKED, NI, NJ, NK, SRCI,SRCJ,SRCK);
     t1 = omp_get_wtime();
-    it = OpenST_LSM3D_Compute(U,LSM_UNLOCKED,V,H,NI,NJ,NK,SRCI,SRCJ,SRCK,max_iter,&converged,BSIZE_I,BSIZE_J,BSIZE_K,EPS);
+    it = OpenST_LSM3D_Compute(U,LSM_UNLOCKED,V,H,NI,NJ,NK,SRCI,SRCJ,SRCK,
+                              max_iter,&converged,
+                              BSIZE_I,BSIZE_J,BSIZE_K,EPS_MULT);
     t2 = omp_get_wtime();
-    LSM3D_Time = t2 - t1;
+    EIK3D_Time = t2 - t1;
 #else
     IMP_NAME = OPENST_FSM3D_IMP_NAME;
     OpenST_FSM3D_Init(U,NI,NJ,NK,SRCI,SRCJ,SRCK);
     t1 = omp_get_wtime();
-    it = OpenST_FSM3D_Compute(U,V,H,NI,NJ,NK,SRCI,SRCJ,SRCK,max_iter,&converged,BSIZE_I,BSIZE_J,BSIZE_K,EPS);
+    it = OpenST_FSM3D_Compute(U,V,H,NI,NJ,NK,SRCI,SRCJ,SRCK,
+                              max_iter,&converged,
+                              BSIZE_I,BSIZE_J,BSIZE_K,EPS);
     t2 = omp_get_wtime();
-    LSM3D_Time = t2 - t1;
+    EIK3D_Time = t2 - t1;
 #endif
-   
-    ex1_check(U, H, NI, NJ, NK, SRCI,SRCJ,SRCK, &L1, &L2, &Linf);
 
-    t1 = omp_get_wtime();
-    BRT3D_ERR = OpenST_BRT3D_Trace(U, V, NI, NJ, NK, H, H, H, BRT3D_TSTEP,
-                        (double)RCVI*H, (double)RCVJ*H, (double)RCVK*H,
-                        (double)SRCI*H, (double)SRCJ*H, (double)SRCK*H,
-                        &RAY, &RAY_NI, &RAY_NJ);
-    t2 = omp_get_wtime();
-    BRT3D_Time = t2 - t1;
+    ex_check(U, H, NI, NJ, NK, SRCI,SRCJ,SRCK, &L1, &L2, &Linf);
 
     printf("====================================================\n");
-    printf("TEST_ID,METHOD_ID,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,EPS,max_iter,it,converged,sec,L1(MAE),L2(MSE),L_inf,NI,NJ,NK,SRCI,SRCJ,SRCK,RCVI,RCVJ,RCVK,BRT3D_TSTEP,BRT3D_sec,BRT3D_ERR,OPENST_BUILDINFO_LINK_TYPE\n");
+    printf("TEST_ID,METHOD_ID,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K," \
+           "EPS,max_iter,it,converged,sec,L1(MAE),L2(MSE),L_inf," \
+           "NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE\n");
 
 #ifdef _WIN32
-	printf("%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e,%e,%e,%e,%Iu,%Iu,%Iu,%Iu,%Iu,%Iu,%Iu,%Iu,%Iu,%e,%e,%i,%s\n",
+    printf("%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e,%e,%e,%e,%Iu,%Iu,%Iu," \
+           "%Iu,%Iu,%Iu,%s\n",
 #else
-    printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e,%e,%e,%e,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%e,%e,%i,%s\n",
+    printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e,%e,%e,%e,%zu,%zu,%zu," \
+           "%zu,%zu,%zu,%s\n",
 #endif
-      TEST_NAME,IMP_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,EPS,max_iter,it,converged,LSM3D_Time,L1,L2,Linf,NI,NJ,NK,SRCI,SRCJ,SRCK,RCVI,RCVJ,RCVK,BRT3D_TSTEP,BRT3D_Time,BRT3D_ERR,OPENST_BUILDINFO_LINK_TYPE_STATIC
+      EX_NAME,IMP_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
+           EPS,max_iter,it,converged,EIK3D_Time,L1,L2,Linf,
+           NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE_STATIC
     );
-    
-    return EXIT_SUCCESS;
+
+    if(converged){
+        errcode = EXIT_SUCCESS;
+    } else {
+        errcode = EXIT_FAILURE;
+    }
+    return errcode;
 }
