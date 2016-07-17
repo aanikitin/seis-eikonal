@@ -21,7 +21,7 @@ int OpenST_FSM3D_ComputePartial(double *U, double *V, double H,
 #if (_OPENMP > 200203)
     size_t levelr, K1, K2, kr, level, I1, I2, ir, jr;
 #else
-#warning size_t downcast to ptrdiff_t due to missing OpenMP 3.0 support
+    #pragma message("size_t downcast to ptrdiff_t due to missing OpenMP 3.0 support")
     ptrdiff_t levelr, K1, K2, kr, level, I1, I2, ir, jr;
 #endif
 

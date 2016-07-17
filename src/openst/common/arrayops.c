@@ -29,10 +29,15 @@ void OpenST_AOP_GetArrStats(double *A, size_t numel, double *min,
 
     if(mean != NULL){
         tmean /= numel;
+		*mean = tmean;
     }
 
-    *min = tmin;
-    *max = tmax;
-    *mean = tmean;
+	if (min != NULL) {
+		*min = tmin;
+	}
+
+	if (max != NULL) {
+		*max = tmax;
+	}
 
 }
