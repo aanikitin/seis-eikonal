@@ -187,8 +187,8 @@ int main(int argc, char *argv[]){
            "NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE\n");
 
 #ifdef _WIN32
-    printf("%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e,%e,%e,%e,%Iu,%Iu,%Iu," \
-           "%Iu,%Iu,%Iu,%s\n",
+    printf("%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e,%e,%e,%e,%e,%e,%e," \
+	   "%Iu,%Iu,%Iu,%Iu,%Iu,%Iu,%s\n",
 #else
     printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e,%e,%e,%e,%e,%e,%e," \
            "%zu,%zu,%zu,%zu,%zu,%zu,%s\n",
