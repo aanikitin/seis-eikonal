@@ -138,6 +138,7 @@ if(UNIX)
 endif()
 
 # ==== TESTS ====
+enable_testing()
 add_subdirectory(test build/test)
 
 # ==== MISC ====

@@ -5,10 +5,9 @@
 #include <math.h>
 #include <float.h>
 
-//#define OPENST_LINK_SHARED
 #include "openst.h"
 
-#define EX_NAME "EIKONAL_EX1"
+#define TEST_ID "EIKONAL_EX1"
 
 #define DEFAULT_SIZE 100u
 #define DEFAULT_MAX_ITER 10
@@ -29,22 +28,31 @@ void ex_init(double *V, size_t NI, size_t NJ, size_t NK){
 
 void ex_check(double *U, double H, size_t NI, size_t NJ, size_t NK,
               size_t SRCI, size_t SRCJ, size_t SRCK,
-              double *L1, double *L2, double *Linf){
+              double *L1, double *L2, double *Linf,
+              double *Umin, double *Umax, double *Umean
+              ){
     size_t i, j, k, NN;
-    double di, dj, dk, dist;
-    double diff, l1, l2, linf;
+    double uval, umin, umax, umean;
+    double di, dj, dk, dist, diff, l1, l2, linf;
     l1 = 0.0;
     l2 = 0.0;
     linf = -INFINITY;
+    umin = INFINITY;
+    umax = -INFINITY;
+    umean = 0.0;
     NN = NI * NJ * NK;
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
             for(k = 0; k < NK; ++k){
+                uval = U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)];
+                umin = fmin(umin,uval);
+                umax = fmax(umax,uval);
+                umean += uval;
                 di = ((double)SRCI - (double)i) * H;
                 dj = ((double)SRCJ - (double)j) * H;
                 dk = ((double)SRCK - (double)k) * H;
                 dist = sqrt(di * di + dj * dj + dk * dk);
-                diff = U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] - dist;
+                diff = uval - dist;
                 l1 += fabs(diff);
                 l2 += (diff * diff);
                 linf = fmax(linf,fabs(diff));
@@ -54,20 +62,25 @@ void ex_check(double *U, double H, size_t NI, size_t NJ, size_t NK,
     *L1 = l1/NN;
     *L2 = l2/NN;
     *Linf = linf;
+    *Umin = umin;
+    *Umax = umax;
+    *Umean = umean/NN;
 }
 
 
 void app_info(char *BIN_NAME,int usage){
-    printf("%s\n",OPENST_VERSION_STR_FULL_STATIC);
-    printf("%s\n",OPENST_BUILDINFO_STR_FULL_STATIC);
+    printf("TEST_ID: %s\n",TEST_ID);
     if(usage){
-        printf("Usage: %s NI NJ NK [BSIZE_I BSIZE_J BSIZE_K] [EPS_MULT] [MAX_ITER]\n" \
-               "\t[NI x NJ x NK] - grid size\n" \
+        printf("Usage: %s [N] [BSIZE_I BSIZE_J BSIZE_K] [EPS_MULT] [MAX_ITER]\n" \
+               "\t[N] - grid size [N x N x N]\n" \
                "\t[BSIZE_I x BSIZE_J x BSIZE_K] - task size\n" \
                "\t[EPS_MULT] - EPS convergence parameter multiplier\n" \
                "\t[MAX_ITER] - maximum number of iterations\n"
                "Running using default values...\n\n",BIN_NAME);
     }
+
+    printf("%s\n",OPENST_VERSION_STR_FULL_STATIC);
+    printf("%s\n",OPENST_BUILDINFO_STR_FULL_STATIC);
 }
 
 
@@ -76,7 +89,7 @@ int main(int argc, char *argv[]){
     int max_iter;
     int it, converged;
     double t1,t2;
-    double L1, L2, Linf;
+    double L1, L2, Linf, Umin, Umax, Umean;
     size_t NI, NJ, NK;
     size_t SRCI, SRCJ, SRCK;
     size_t BSIZE_I;
@@ -90,33 +103,32 @@ int main(int argc, char *argv[]){
     int usage_flag, errcode;
 
     NI = DEFAULT_SIZE;
-    NJ = DEFAULT_SIZE;
-    NK = DEFAULT_SIZE;
     EPS_MULT = DEFAULT_EPS_MULT;
     max_iter = DEFAULT_MAX_ITER;
     usage_flag = 1;
 
-    if(argc >= 4){
+    if(argc > 1){
         NI = atoi(argv[1]);
-        NJ = atoi(argv[2]);
-        NK = atoi(argv[3]);
         usage_flag = 0;
     }
+    
+    NJ = NI;
+    NK = NI;
 
-    if(argc >= 7){
-        BSIZE_I = atoi(argv[4]);
-        BSIZE_J = atoi(argv[5]);
-        BSIZE_K = atoi(argv[6]);
+    if(argc >= 5){
+        BSIZE_I = atoi(argv[2]);
+        BSIZE_J = atoi(argv[3]);
+        BSIZE_K = atoi(argv[4]);
     } else {
         OpenST_FSM3D_SuggestBlockSize(NI,NJ,NK,&BSIZE_I,&BSIZE_J,&BSIZE_K);
     }
 
-    if(argc >= 8){
-        EPS_MULT = atof(argv[7]);
+    if(argc > 5){
+        EPS_MULT = atof(argv[5]);
     }
 
-    if(argc >= 9){
-        max_iter = atoi(argv[8]);
+    if(argc > 6){
+        max_iter = atoi(argv[6]);
     }
 
     app_info(argv[0],usage_flag);
@@ -131,7 +143,7 @@ int main(int argc, char *argv[]){
     SRCI = NI/2;
     SRCJ = NJ/2;
     SRCK = NK/2;
-    H = 2.0/NI;
+    H = 1.0/(NI - 1);
 
     OMP_MAX_THREADS = omp_get_max_threads();
 
@@ -146,7 +158,7 @@ int main(int argc, char *argv[]){
         EPS = 0.0;
     }
 
-#ifdef LSM3D_IMP
+#ifndef TEST_FSM
     IMP_NAME = OPENST_LSM3D_IMP_NAME;
     OpenST_LSM3D_Init(U,LSM_UNLOCKED, NI, NJ, NK, SRCI,SRCJ,SRCK);
     t1 = omp_get_wtime();
@@ -166,26 +178,27 @@ int main(int argc, char *argv[]){
     EIK3D_Time = t2 - t1;
 #endif
 
-    ex_check(U, H, NI, NJ, NK, SRCI,SRCJ,SRCK, &L1, &L2, &Linf);
+    ex_check(U, H, NI, NJ, NK, SRCI,SRCJ,SRCK, &L1, &L2, &Linf, &Umin, &Umax, &Umean);
 
     printf("====================================================\n");
     printf("TEST_ID,METHOD_ID,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K," \
            "EPS,max_iter,it,converged,sec,L1(MAE),L2(MSE),L_inf," \
+           "Umin,Umean,Umax," \
            "NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE\n");
 
 #ifdef _WIN32
     printf("%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e,%e,%e,%e,%Iu,%Iu,%Iu," \
            "%Iu,%Iu,%Iu,%s\n",
 #else
-    printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e,%e,%e,%e,%zu,%zu,%zu," \
-           "%zu,%zu,%zu,%s\n",
+    printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e,%e,%e,%e,%e,%e,%e," \
+           "%zu,%zu,%zu,%zu,%zu,%zu,%s\n",
 #endif
-      EX_NAME,IMP_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
-           EPS,max_iter,it,converged,EIK3D_Time,L1,L2,Linf,
+           TEST_ID,IMP_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
+           EPS,max_iter,it,converged,EIK3D_Time,L1,L2,Linf,Umin,Umean,Umax,
            NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE_STATIC
-    );
+           );
 
-    if(converged){
+    if(converged && it == 9){
         errcode = EXIT_SUCCESS;
     } else {
         errcode = EXIT_FAILURE;

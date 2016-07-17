@@ -1,5 +1,7 @@
 # SEIS-EIKONAL
 
+[![License (3-Clause BSD)](https://img.shields.io/badge/license-BSD%203--Clause-brightgreen.svg)](https://github.com/aanikitin/seis-eikonal/blob/master/LICENSE)
+
 **work in progress, not for production use**
 
 Eikonal equation solver for calculating first-arrival traveltimes of seismic 
@@ -23,3 +25,10 @@ Anton Duchkov, PhD - head of laboratory, IPGG SB RAS - PhD thesis advisor
 (geophysics). 
 Alexandr Serdyukov, PhD - researcher, IPGG SB RAS - consultant (numerical 
 methods).
+
+References:
+1) Nikitin Alexandr A., Serdyukov Alexandr S., Duchkov Anton A. <a 
+href="http://elibrary.ru/item.asp?id=25994951">Optimization of parallel 
+sweeping methods of numerical computation of seismic wave travel times for 
+shared memory computing systems</a> // ИНТЕРЭКСПО 
+ГЕО-СИБИРЬ. – 2016. – V. 2. – N. 1. – P. 241-245.
