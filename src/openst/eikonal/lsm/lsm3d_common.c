@@ -5,44 +5,11 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 
-void OpenST_LSM3D_Init(double *U, char *LSM_UNLOCKED, size_t NI, size_t NJ, size_t NK,
-                       size_t SRCI, size_t SRCJ, size_t SRCK){
-    size_t i, j, k;
-    for(i = 0; i < NI; ++i){
-        for(j = 0; j < NJ; ++j){
-            for(k = 0; k < NK; ++k){
-                U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = DBL_MAX;
-                LSM_UNLOCKED[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = 0;
-            }
-        }
-    }
-    U[OPENST_MEMADR_3D(SRCI,SRCJ,SRCK,NI,NJ,NK)] = 0.0;
-    if(SRCI > 0){
-        LSM_UNLOCKED[OPENST_MEMADR_3D(SRCI - 1,SRCJ,SRCK,NI,NJ,NK)] = 1;
-    }
-    if(SRCI < NI - 1){
-        LSM_UNLOCKED[OPENST_MEMADR_3D(SRCI + 1,SRCJ,SRCK,NI,NJ,NK)] = 1;
-    }
-    if(SRCJ > 0){
-        LSM_UNLOCKED[OPENST_MEMADR_3D(SRCI,SRCJ - 1,SRCK,NI,NJ,NK)] = 1;
-    }
-    if(SRCJ < NJ - 1){
-        LSM_UNLOCKED[OPENST_MEMADR_3D(SRCI,SRCJ + 1,SRCK,NI,NJ,NK)] = 1;
-    }
-    if(SRCK > 0){
-        LSM_UNLOCKED[OPENST_MEMADR_3D(SRCI,SRCJ,SRCK - 1,NI,NJ,NK)] = 1;
-    }
-    if(SRCK < NK - 1){
-        LSM_UNLOCKED[OPENST_MEMADR_3D(SRCI,SRCJ,SRCK + 1,NI,NJ,NK)] = 1;
-    }
-}
-
-
-int OpenST_LSM3D_NodeUpdate(double *U, char *LSM_UNLOCKED, double *V, double H,
-                            size_t NI, size_t NJ, size_t NK,
-                            size_t SRCI, size_t SRCJ, size_t SRCK,
-                            int REVI, int REVJ, int REVK,
-                            size_t ir, size_t jr, size_t kr, double EPS){
+int OpenST_LSM3D_NodeUpdate_1H(double *U, char *LSM_UNLOCKED, double *V,
+                               size_t NI, size_t NJ, size_t NK,
+                               double H,
+                               int REVI, int REVJ, int REVK,
+                               size_t ir, size_t jr, size_t kr, double EPS){
 
     size_t i,j,k;
     size_t mem_cur, mem_il, mem_ir, mem_jl, mem_jr, mem_kl, mem_kr;
@@ -66,14 +33,10 @@ int OpenST_LSM3D_NodeUpdate(double *U, char *LSM_UNLOCKED, double *V, double H,
     } else {
         k = kr;
     }
-    
+
     mem_cur = OPENST_MEMADR_3D(i,j,k,NI,NJ,NK);
     
     if(LSM_UNLOCKED[mem_cur]){
-
-        if(i == SRCI && j == SRCJ && k == SRCK){
-            return notconverged;
-        }
 
         mem_il = OPENST_MEMADR_3D(i - 1,j,k,NI,NJ,NK);
         mem_ir = OPENST_MEMADR_3D(i + 1,j,k,NI,NJ,NK);
@@ -217,13 +180,13 @@ int OpenST_LSM3D_NodeUpdate(double *U, char *LSM_UNLOCKED, double *V, double H,
 }
 
 
-int OpenST_LSM3D_BlockSerial(double *U, char *LSM_UNLOCKED, double *V, double H,
-                             size_t NI, size_t NJ, size_t NK,
-                             size_t SRCI, size_t SRCJ, size_t SRCK,
-                             int REVI, int REVJ, int REVK,
-                             size_t istart, size_t jstart, size_t kstart,
-                             size_t isize, size_t jsize, size_t ksize,
-                             double EPS){
+int OpenST_LSM3D_BlockSerial_1H(double *U, char *LSM_UNLOCKED, double *V,
+                                size_t NI, size_t NJ, size_t NK,
+                                double H,
+                                int REVI, int REVJ, int REVK,
+                                size_t istart, size_t jstart, size_t kstart,
+                                size_t isize, size_t jsize, size_t ksize,
+                                double EPS){
 
     int notconverged;
     size_t i, j, ir, jr, kr, iend, jend, kend;
@@ -238,11 +201,11 @@ int OpenST_LSM3D_BlockSerial(double *U, char *LSM_UNLOCKED, double *V, double H,
             for(i = ir; (i < (ir + 2u)) && (i < iend); ++i){
                 for(j = jr; (j < (jr + 2u)) && (j < jend); ++j){
                     for(kr = kstart; kr < kend; ++kr){
-                        if(OpenST_LSM3D_NodeUpdate(U, LSM_UNLOCKED, V, H,
-                                                   NI, NJ, NK,
-                                                   SRCI, SRCJ, SRCK,
-                                                   REVI, REVJ, REVK,
-                                                   i, j, kr, EPS)){
+                        if(OpenST_LSM3D_NodeUpdate_1H(U, LSM_UNLOCKED, V,
+                                                      NI, NJ, NK,
+                                                      H,
+                                                      REVI, REVJ, REVK,
+                                                      i, j, kr, EPS)){
                             notconverged = 1;
                         }
                     }
@@ -253,3 +216,51 @@ int OpenST_LSM3D_BlockSerial(double *U, char *LSM_UNLOCKED, double *V, double H,
 
     return notconverged;
 }
+
+
+int OpenST_LSM3D_BlockSerial(double *U, char *LSM_UNLOCKED, double *V,
+                                size_t NI, size_t NJ, size_t NK,
+                                double HI, double HJ, double HK,
+                                int REVI, int REVJ, int REVK,
+                                size_t istart, size_t jstart, size_t kstart,
+                                size_t isize, size_t jsize, size_t ksize,
+                                double EPS){
+
+    int notconverged;
+    size_t i, j, ir, jr, kr, iend, jend, kend;
+
+    if((HI == HJ) && (HI == HK)){
+        return OpenST_LSM3D_BlockSerial_1H(U, LSM_UNLOCKED, V,
+                                           NI, NJ, NK,
+                                           HI,
+                                           REVI, REVJ, REVK,
+                                           istart, jstart, kstart,
+                                           isize, jsize, ksize, EPS);
+    }
+
+    iend = MIN(istart + isize, NI);
+    jend = MIN(jstart + jsize, NJ);
+    kend = MIN(kstart + ksize, NK);
+
+    notconverged = 0;
+    for(ir = istart; ir < iend; ir += 2u){
+        for(jr = jstart; jr < jend; jr += 2u){
+            for(i = ir; (i < (ir + 2u)) && (i < iend); ++i){
+                for(j = jr; (j < (jr + 2u)) && (j < jend); ++j){
+                    for(kr = kstart; kr < kend; ++kr){
+                        if(OpenST_LSM3D_NodeUpdate(U, LSM_UNLOCKED, V,
+                                                      NI, NJ, NK,
+                                                      HI, HJ, HK,
+                                                      REVI, REVJ, REVK,
+                                                      i, j, kr, EPS)){
+                            notconverged = 1;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return notconverged;
+}
+

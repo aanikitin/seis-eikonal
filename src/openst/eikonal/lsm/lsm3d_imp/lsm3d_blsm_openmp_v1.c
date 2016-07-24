@@ -7,12 +7,12 @@ const char OPENST_LSM3D_IMP_NAME[] = M_LSM3D_IMP_NAME;
 const size_t OPENST_LSM3D_IMP_NAME_LENGTH = sizeof(M_LSM3D_IMP_NAME);
 
 
-int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double H,
-                                size_t NI, size_t NJ, size_t NK,
-                                size_t SRCI, size_t SRCJ, size_t SRCK,
-                                int start_iter, int max_iter, int *converged,
-                                size_t BSIZE_I, size_t BSIZE_J, size_t BSIZE_K,
-                                double EPS){
+int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V,
+                                           size_t NI, size_t NJ, size_t NK,
+                                           double HI, double HJ, double HK,
+                                           int start_iter, int max_iter, int *converged,
+                                           size_t BSIZE_I, size_t BSIZE_J, size_t BSIZE_K,
+                                           double EPS){
 
     int total_it, it, notconvergedl;
     int REVI, REVJ, REVK;
@@ -43,8 +43,8 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
 
 #pragma omp parallel default(none) \
     shared(BSIZE_I, BSIZE_J, BSIZE_K, NBI, NBJ, NBK, total_it, notconvergedl, \
-    NI, NJ, NK, SRCI, SRCJ, SRCK, ir, jr, kr, \
-    U, LSM_UNLOCKED, V, H, start_iter, max_iter, notconvergedt, \
+    NI, NJ, NK, ir, jr, kr, \
+    U, LSM_UNLOCKED, V, HI, HJ, HK, start_iter, max_iter, notconvergedt, \
     REVI, REVJ, REVK, U3d, EPS) \
     private(it)
     {
@@ -61,8 +61,9 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
 #pragma omp task default(shared) firstprivate(ir, jr, kr, REVI, REVJ, REVK) \
     depend(out: U3d[0:1][0:1][0:1])
                 notconvergedt[0] =
-                        OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V, H, NI, NJ, NK,
-                                                 SRCI, SRCJ, SRCK,
+                        OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V,
+                                                 NI, NJ, NK,
+                                                 HI, HJ, HK,
                                                  REVI, REVJ, REVK,
                                                  0, 0, 0,
                                                  BSIZE_I, BSIZE_J, BSIZE_K, EPS);
@@ -73,8 +74,9 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
     depend(in: U3d[(ir - 1) : 1][0 : 1][0: 1]) \
     depend(out: U3d[ir : 1][0 : 1][0 : 1])
                     notconvergedt[ir * NBJ * NBK] =
-                            OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V, H, NI, NJ, NK,
-                                                     SRCI, SRCJ, SRCK,
+                            OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V,
+                                                     NI, NJ, NK,
+                                                     HI, HJ, HK,
                                                      REVI, REVJ, REVK,
                                                      ir * BSIZE_I, 0, 0,
                                                      BSIZE_I, BSIZE_J, BSIZE_K, EPS);
@@ -85,8 +87,9 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
     depend(in: U3d[0 : 1][0 : 1][(kr - 1) : 1]) \
     depend(out: U3d[0 : 1][0 : 1][kr : 1])
                     notconvergedt[kr] =
-                            OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V, H, NI, NJ, NK,
-                                                     SRCI, SRCJ, SRCK,
+                            OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V,
+                                                     NI, NJ, NK,
+                                                     HI, HJ, HK,
                                                      REVI, REVJ, REVK,
                                                      0, 0, kr * BSIZE_K,
                                                      BSIZE_I, BSIZE_J, BSIZE_K, EPS);
@@ -100,8 +103,9 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
     depend(in: U3d[ir : 1][0 : 1][(kr - 1) : 1]) \
     depend(out: U3d[ir : 1][0 : 1][kr : 1])
                         notconvergedt[ir * NBJ * NBK + kr] =
-                                OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V, H, NI, NJ, NK,
-                                                         SRCI, SRCJ, SRCK,
+                                OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V,
+                                                         NI, NJ, NK,
+                                                         HI, HJ, HK,
                                                          REVI, REVJ, REVK,
                                                          ir * BSIZE_I, 0,
                                                          kr * BSIZE_K,
@@ -114,8 +118,9 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
     depend(in: U3d[0 : 1][(jr - 1) : 1][0 : 1]) \
     depend(out: U3d[0 : 1][jr  : 1][0 : 1])
                     notconvergedt[jr * NBK] =
-                            OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V, H, NI, NJ, NK,
-                                                     SRCI, SRCJ, SRCK,
+                            OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V,
+                                                     NI, NJ, NK,
+                                                     HI, HJ, HK,
                                                      REVI, REVJ, REVK,
                                                      0, jr * BSIZE_J, 0,
                                                      BSIZE_I, BSIZE_J, BSIZE_K, EPS);
@@ -128,8 +133,9 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
     depend(in: U3d[0 : 1][jr : 1][(kr - 1) : 1]) \
     depend(out: U3d[0 : 1][jr : 1][kr : 1])
                         notconvergedt[jr * NBK + kr] =
-                                OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V, H, NI, NJ, NK,
-                                                         SRCI, SRCJ, SRCK,
+                                OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V,
+                                                         NI, NJ, NK,
+                                                         HI, HJ, HK,
                                                          REVI, REVJ, REVK,
                                                          0, jr * BSIZE_J,
                                                          kr * BSIZE_K,
@@ -144,8 +150,9 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
     depend(in: U3d[ir : 1][(jr - 1) : 1][0 : 1]) \
     depend(out: U3d[ir : 1][jr : 1][0 : 1])
                         notconvergedt[ir * NBJ * NBK + jr * NBK] =
-                                OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V, H, NI, NJ, NK,
-                                                         SRCI, SRCJ, SRCK,
+                                OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V,
+                                                         NI, NJ, NK,
+                                                         HI, HJ, HK,
                                                          REVI, REVJ, REVK,
                                                          ir * BSIZE_I, jr * BSIZE_J,
                                                          0,
@@ -162,8 +169,9 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
     depend(in: U3d[ir : 1][jr : 1][(kr - 1) : 1]) \
     depend(out: U3d[ir : 1][jr : 1][kr : 1])
                             notconvergedt[ir * NBJ * NBK + jr * NBK + kr] =
-                                    OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V, H, NI, NJ, NK,
-                                                             SRCI, SRCJ, SRCK,
+                                    OpenST_LSM3D_BlockSerial(U, LSM_UNLOCKED, V,
+                                                             NI, NJ, NK,
+                                                             HI, HJ, HK,
                                                              REVI, REVJ, REVK,
                                                              ir * BSIZE_I, jr * BSIZE_J,
                                                              kr * BSIZE_K,
@@ -200,14 +208,15 @@ int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V, double
 }
 
 
-int OpenST_LSM3D_Compute(double *U, char *LSM_UNLOCKED, double *V, double H,
+int OpenST_LSM3D_Compute(double *U, char *LSM_UNLOCKED, double *V,
                          size_t NI, size_t NJ, size_t NK,
-                         size_t SRCI, size_t SRCJ, size_t SRCK, int max_iter,
-                         int *converged, size_t BSIZE_I, size_t BSIZE_J,
-                         size_t BSIZE_K, double EPS){
-    return OpenST_LSM3D_ComputePartial(U, LSM_UNLOCKED, V, H,
+                         double HI, double HJ, double HK,
+                         int max_iter, int *converged,
+                         size_t BSIZE_I, size_t BSIZE_J, size_t BSIZE_K,
+                         double EPS){
+    return OpenST_LSM3D_ComputePartial(U, LSM_UNLOCKED, V,
                                        NI, NJ, NK,
-                                       SRCI, SRCJ, SRCK,
+                                       HI, HJ, HK,
                                        0, max_iter, converged,
                                        BSIZE_I, BSIZE_J, BSIZE_K, EPS);
 }

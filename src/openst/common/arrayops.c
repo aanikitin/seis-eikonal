@@ -28,7 +28,7 @@ void OpenST_AOP_GetArrStats(double *A, size_t numel, double *min,
     }
 
     if(mean != NULL){
-        tmean /= numel;
+        tmean /= (double)numel;
 		*mean = tmean;
     }
 
