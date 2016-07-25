@@ -240,7 +240,7 @@ EXIT:
 }
 
 
-OPENST_ERR OpenST_FSM3D_Init(double *U, double *V,
+OPENST_ERR OpenST_FSM3D_Init_2(double *U, double *V,
                              size_t NI, size_t NJ, size_t NK,
                              double HI, double HJ, double HK,
                              double SRCI, double SRCJ, double SRCK,
@@ -277,4 +277,17 @@ OPENST_ERR OpenST_FSM3D_Init(double *U, double *V,
     }
 
     return errcode;
+}
+
+
+OPENST_ERR OpenST_FSM3D_Init(double *U, double *V,
+                             size_t NI, size_t NJ, size_t NK,
+                             double HI, double HJ, double HK,
+                             double SRCI, double SRCJ, double SRCK){
+    return OpenST_FSM3D_Init_2(U,V,
+                             NI,NJ,NK,
+                             HI,HJ,HK,
+                             SRCI,SRCJ,SRCK,
+                             NULL,NULL,NULL,
+                             OPENST_FSM3D_INIT_DEFAULT);
 }

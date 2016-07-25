@@ -5,6 +5,36 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 
+OPENST_ERR OpenST_FSM3D(double *U, double *V,
+                        size_t NI, size_t NJ, size_t NK,
+                        double HI, double HJ, double HK,
+                        double SRCI, double SRCJ, double SRCK,
+                        double EPS, int max_iter,
+                        int *it, int *converged){
+
+    OPENST_ERR errcode = OPENST_ERR_SUCCESS;
+    size_t BSIZE_I, BSIZE_J, BSIZE_K;
+
+    OpenST_FSM3D_SuggestBlockSize(NI,NJ,NK,&BSIZE_I,&BSIZE_J,&BSIZE_K);
+
+    if((errcode = OpenST_FSM3D_Init(U,V,
+                      NI,NJ,NK,
+                      HI,HJ,HK,
+                      SRCI,SRCJ,SRCK)) != OPENST_ERR_SUCCESS){
+        goto EXIT;
+    }
+
+    *it = OpenST_FSM3D_Compute(U,V,
+                              NI,NJ,NK,
+                              HI,HJ,HK,
+                              max_iter,converged,
+                              BSIZE_I,BSIZE_J,BSIZE_K,EPS);
+
+EXIT:
+    return errcode;
+}
+
+
 void OpenST_FSM3D_SuggestBlockSize(size_t NI, size_t NJ, size_t NK, 
                                    size_t *BSIZE_I, size_t *BSIZE_J,
                                    size_t *BSIZE_K){
@@ -37,10 +67,10 @@ void OpenST_FSM3D_GetSweepOrder(int it, int *REVI, int *REVJ, int *REVK){
 
 
 int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
-                            size_t NI, size_t NJ, size_t NK,
-                            double H,
-                            int REVI, int REVJ, int REVK,
-                            size_t ir, size_t jr, size_t kr, double EPS){
+                               size_t NI, size_t NJ, size_t NK,
+                               double H,
+                               int REVI, int REVJ, int REVK,
+                               size_t ir, size_t jr, size_t kr, double EPS){
 
     size_t i,j,k;
     size_t mem_cur, mem_il, mem_ir, mem_jl, mem_jr, mem_kl, mem_kr;
@@ -158,12 +188,12 @@ int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
 
 
 int OpenST_FSM3D_BlockSerial_1H(double *U, double *V,
-                             size_t NI, size_t NJ, size_t NK,
-                             double H,
-                             int REVI, int REVJ, int REVK,
-                             size_t istart, size_t jstart, size_t kstart,
-                             size_t isize, size_t jsize, size_t ksize,
-                             double EPS){
+                                size_t NI, size_t NJ, size_t NK,
+                                double H,
+                                int REVI, int REVJ, int REVK,
+                                size_t istart, size_t jstart, size_t kstart,
+                                size_t isize, size_t jsize, size_t ksize,
+                                double EPS){
 
     int notconverged;
     size_t i, j, ir, jr, kr, iend, jend, kend;
@@ -179,10 +209,10 @@ int OpenST_FSM3D_BlockSerial_1H(double *U, double *V,
                 for(j = jr; (j < (jr + 2u)) && (j < jend); ++j){
                     for(kr = kstart; kr < kend; ++kr){
                         if(OpenST_FSM3D_NodeUpdate_1H(U, V,
-                                                   NI, NJ, NK,
-                                                   H,
-                                                   REVI, REVJ, REVK,
-                                                   i, j, kr, EPS)){
+                                                      NI, NJ, NK,
+                                                      H,
+                                                      REVI, REVJ, REVK,
+                                                      i, j, kr, EPS)){
                             notconverged = 1;
                         }
                     }

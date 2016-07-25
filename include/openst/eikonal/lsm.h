@@ -19,13 +19,25 @@ extern "C" {
 OPENST_API extern const char OPENST_LSM3D_IMP_NAME[];
 OPENST_API extern const size_t OPENST_LSM3D_IMP_NAME_LENGTH;
 
+OPENST_API OPENST_ERR OpenST_LSM3D(double *U, char *LSM_UNLOCKED, double *V,
+                                   size_t NI, size_t NJ, size_t NK,
+                                   double HI, double HJ, double HK,
+                                   double SRCI, double SRCJ, double SRCK,
+                                   double EPS, int max_iter,
+                                   int *it, int *converged);
+
 OPENST_API OPENST_ERR OpenST_LSM3D_Init(double *U, char *LSM_UNLOCKED, double *V,
                                         size_t NI, size_t NJ, size_t NK,
                                         double HI, double HJ, double HK,
-                                        double SRCI, double SRCJ, double SRCK,
-                                        size_t **SRCidx,
-                                        size_t *SRCidx_NI, size_t *SRCidx_NJ,
-                                        OPENST_FSM3D_INIT_METHOD method);
+                                        double SRCI, double SRCJ, double SRCK);
+
+OPENST_API OPENST_ERR OpenST_LSM3D_Init_2(double *U, char *LSM_UNLOCKED, double *V,
+                                          size_t NI, size_t NJ, size_t NK,
+                                          double HI, double HJ, double HK,
+                                          double SRCI, double SRCJ, double SRCK,
+                                          size_t **SRCidx, size_t *SRCidx_NI,
+                                          size_t *SRCidx_NJ,
+                                          OPENST_FSM3D_INIT_METHOD method);
 
 OPENST_API int OpenST_LSM3D_Compute(double *U, char *LSM_UNLOCKED, double *V,
                                     size_t NI, size_t NJ, size_t NK,

@@ -1,7 +1,7 @@
 #include "openst/eikonal/lsm.h"
 
 
-OPENST_ERR OpenST_LSM3D_Init(double *U, char *LSM_UNLOCKED, double *V,
+OPENST_ERR OpenST_LSM3D_Init_2(double *U, char *LSM_UNLOCKED, double *V,
                              size_t NI, size_t NJ, size_t NK,
                              double HI, double HJ, double HK,
                              double SRCI, double SRCJ, double SRCK,
@@ -19,7 +19,7 @@ OPENST_ERR OpenST_LSM3D_Init(double *U, char *LSM_UNLOCKED, double *V,
         output_srcidx = 0;
     }
 
-    errcode = OpenST_FSM3D_Init(U, V, NI, NJ, NK, HI, HJ, HK,
+    errcode = OpenST_FSM3D_Init_2(U, V, NI, NJ, NK, HI, HJ, HK,
                                 SRCI, SRCJ, SRCK,
                                 &SRCidx_loc, &SRCidx_NI_loc, &SRCidx_NJ_loc,
                                 method);
@@ -72,4 +72,17 @@ OPENST_ERR OpenST_LSM3D_Init(double *U, char *LSM_UNLOCKED, double *V,
     }
 
     return errcode;
+}
+
+
+OPENST_ERR OpenST_LSM3D_Init(double *U, char *LSM_UNLOCKED, double *V,
+                             size_t NI, size_t NJ, size_t NK,
+                             double HI, double HJ, double HK,
+                             double SRCI, double SRCJ, double SRCK){
+    return OpenST_LSM3D_Init_2(U,LSM_UNLOCKED,V,
+                             NI,NJ,NK,
+                             HI,HJ,HK,
+                             SRCI,SRCJ,SRCK,
+                             NULL,NULL,NULL,
+                             OPENST_FSM3D_INIT_DEFAULT);
 }

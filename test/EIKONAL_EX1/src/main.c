@@ -156,6 +156,8 @@ int main(int argc, char *argv[]){
     HJ = DEFAULT_DOMAIN_SIZE / (double)(NJ - 1);
     HK = DEFAULT_DOMAIN_SIZE / (double)(NK - 1);
 
+    printf("HI = %e; HJ = %e; HK = %e\n",HI,HJ,HK);
+
     OMP_MAX_THREADS = omp_get_max_threads();
 
     ex_init(V, NI, NJ, NK);
@@ -169,11 +171,10 @@ int main(int argc, char *argv[]){
         EPS = 0.0;
     }
 
-
     t1 = omp_get_wtime();
 #ifndef TEST_FSM
     IMP_NAME = OPENST_LSM3D_IMP_NAME;
-    OpenST_LSM3D_Init(U,LSM_UNLOCKED,V,
+    OpenST_LSM3D_Init_2(U,LSM_UNLOCKED,V,
                       NI,NJ,NK,
                       HI,HJ,HK,
                       SRCI,SRCJ,SRCK,
@@ -181,7 +182,7 @@ int main(int argc, char *argv[]){
                       OPENST_FSM3D_INIT_DEFAULT);
 #else
     IMP_NAME = OPENST_FSM3D_IMP_NAME;
-    OpenST_FSM3D_Init(U,V,
+    OpenST_FSM3D_Init_2(U,V,
                       NI,NJ,NK,
                       HI,HJ,HK,
                       SRCI,SRCJ,SRCK,
@@ -189,8 +190,7 @@ int main(int argc, char *argv[]){
                       OPENST_FSM3D_INIT_DEFAULT);
 #endif
     t2 = omp_get_wtime();
-
-    printf("HI = %e; HJ = %e; HK = %e\n",HI,HJ,HK);
+    printf("Initialization time: %e sec\n", t2 - t1);
     printf("U initialized in:\n");
     for(SRCidx_i = 0; SRCidx_i < SRCidx_NI; ++SRCidx_i){
         i = SRCidx[OPENST_MEMADR_2D(SRCidx_i,0,SRCidx_NI,SRCidx_NJ)];
@@ -202,8 +202,6 @@ int main(int argc, char *argv[]){
         printf("U[%zu,%zu,%zu] = %e\n",i,j,k,U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)]);
 #endif
     }
-
-    printf("Initialization time: %e sec\n", t2 - t1);
 
     t1 = omp_get_wtime();
 #ifndef TEST_FSM
