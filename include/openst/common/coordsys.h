@@ -10,15 +10,19 @@ extern "C" {
 #include <math.h>
 
 #include "openst/common/macros.h"
+#include "openst/common/error.h"
 
 OPENST_API double OpenST_CRS_Distance3D(double i0, double j0, double k0,
-                             double i1, double j1, double k1);
+                                        double i1, double j1, double k1);
 
-OPENST_API int OpenST_CRS_Cart2IndFloor(double coord, double cell_size, size_t *ind);
+OPENST_API OPENST_ERR OpenST_CRS_Cart2IndFloor(double coord,
+                                               double cell_size, size_t *ind);
 
-OPENST_API int OpenST_CRS_Cart2IndRound(double coord, double cell_size, size_t *ind);
+OPENST_API OPENST_ERR OpenST_CRS_Cart2IndRound(double coord,
+                                               double cell_size, size_t *ind);
 
-OPENST_API int OpenST_CRS_Cart2Ind(double coord, double cell_size, size_t *ind);
+OPENST_API OPENST_ERR OpenST_CRS_Cart2Ind(double coord,
+                                          double cell_size, size_t *ind);
 
 #ifdef __cplusplus
 }

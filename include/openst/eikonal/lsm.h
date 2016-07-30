@@ -26,6 +26,7 @@ OPENST_API OPENST_ERR OpenST_LSM3D(double *U, char *LSM_UNLOCKED, double *V,
                                    double EPS, int max_iter,
                                    int *it, int *converged);
 
+//TODO: check that SRC is within modeling space
 OPENST_API OPENST_ERR OpenST_LSM3D_Init(double *U, char *LSM_UNLOCKED, double *V,
                                         size_t NI, size_t NJ, size_t NK,
                                         double HI, double HJ, double HK,

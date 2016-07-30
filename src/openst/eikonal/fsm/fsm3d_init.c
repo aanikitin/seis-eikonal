@@ -25,7 +25,7 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Point(double *U, double *V,
         SRCidx_loc = (size_t *)malloc(sizeof(size_t) * SRCidx_NI_loc
                                       * SRCidx_NJ_loc);
         if(SRCidx_loc == NULL){
-            errcode = OPENST_ERR_MEMORY;
+            errcode = OPENST_ERR_MEMORY_ALLOC;
             goto EXIT;
         }
     } else {
@@ -123,7 +123,7 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
         SRCidx_loc = (size_t *)malloc(sizeof(size_t) * SRCidx_NI_loc
                                       * SRCidx_NJ_loc);
         if(SRCidx_loc == NULL){
-            errcode = OPENST_ERR_MEMORY;
+            errcode = OPENST_ERR_MEMORY_ALLOC;
             goto EXIT;
         }
     }

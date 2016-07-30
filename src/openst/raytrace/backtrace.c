@@ -15,7 +15,7 @@ double OpenST_BRT3D_SuggestTSTEP(double vmax, double HI, double HJ, double HK){
 }
 
 
-int OpenST_BRT3D_Step(double *T, double *V,
+OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
                      size_t NI, size_t NJ, size_t NK,
                      double HI, double HJ, double HK,
                      double TSTEP,
@@ -42,25 +42,25 @@ int OpenST_BRT3D_Step(double *T, double *V,
         valj = CURJ - gradj/grad_length * TSTEP * vel;
         valk = CURK - gradk/grad_length * TSTEP * vel;
     } else {
-        return OPENST_RAYTRACE_ERR_GRAD_ZERO;
+        return OPENST_ERR_DIV_BY_ZERO;
     }
 
     *DSTI = vali;
     *DSTJ = valj;
     *DSTK = valk;
 
-    return OPENST_RAYTRACE_SUCCESS;
+    return OPENST_ERR_SUCCESS;
 }
 
 
-int OpenST_BRT3D_Trace(double *T, double *V,
+OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
                 size_t NI, size_t NJ, size_t NK,
                 double HI, double HJ, double HK, double TSTEP,
                 double RCVI, double RCVJ, double RCVK,
                 double SRCI, double SRCJ, double SRCK,
                 double **RAY, size_t *RAY_NI, size_t *RAY_NJ){
 
-    int errcode;
+    OPENST_ERR errcode;
     size_t ind_src_i, ind_src_j, ind_src_k;
     size_t ind_cur_i, ind_cur_j, ind_cur_k;
     double CUR[3];
@@ -68,10 +68,13 @@ int OpenST_BRT3D_Trace(double *T, double *V,
     struct OpenST_DYNARR arr;
     struct OpenST_DYNARR *arrptr = &arr;
 
-    if (OpenST_CRS_Cart2Ind(SRCI, HI, &ind_src_i)
-            || OpenST_CRS_Cart2Ind(SRCJ, HJ, &ind_src_j)
-            || OpenST_CRS_Cart2Ind(SRCK, HK, &ind_src_k)){
-        errcode = OPENST_RAYTRACE_ERR_COORD;
+    if((errcode = OpenST_CRS_Cart2Ind(SRCI, HI, &ind_src_i))){
+        goto EXIT;
+    }
+    if((errcode = OpenST_CRS_Cart2Ind(SRCJ, HJ, &ind_src_j))){
+        goto EXIT;
+    }
+    if((errcode = OpenST_CRS_Cart2Ind(SRCK, HK, &ind_src_k))){
         goto EXIT;
     }
 
@@ -80,20 +83,23 @@ int OpenST_BRT3D_Trace(double *T, double *V,
     CUR[2] = RCVK;
 
     if(OpenST_DYNARR_Init(arrptr, NI + NJ + NK, sizeof(double) * 3) == NULL){
-        errcode = OPENST_RAYTRACE_ERR_MEM;
+        errcode = OPENST_ERR_MEMORY_ALLOC;
         goto EXIT;
     }
 
     while(1){
         if(CUR[0] < 0 || CUR[1] < 0 || CUR[2] < 0){
-            errcode = OPENST_RAYTRACE_ERR_BORDER_PASSED;
+            errcode = OPENST_ERR_ALGORITHM;
             break;
         }
 
-        if (OpenST_CRS_Cart2Ind(CUR[0], HI, &ind_cur_i)
-            || OpenST_CRS_Cart2Ind(CUR[1], HJ, &ind_cur_j)
-            || OpenST_CRS_Cart2Ind(CUR[2], HK, &ind_cur_k)){
-            errcode = OPENST_RAYTRACE_ERR_COORD;
+        if((errcode = OpenST_CRS_Cart2Ind(CUR[0], HI, &ind_cur_i))){
+            goto EXIT;
+        }
+        if((errcode = OpenST_CRS_Cart2Ind(CUR[1], HJ, &ind_cur_j))){
+            goto EXIT;
+        }
+        if((errcode = OpenST_CRS_Cart2Ind(CUR[2], HK, &ind_cur_k))){
             goto EXIT;
         }
 
@@ -104,7 +110,7 @@ int OpenST_BRT3D_Trace(double *T, double *V,
 
         if(ind_cur_i == ind_src_i
             && ind_cur_j == ind_src_j && ind_cur_k == ind_src_k){
-            errcode = OPENST_RAYTRACE_SUCCESS;
+            errcode = OPENST_ERR_SUCCESS;
 #if DEBUG_LOG
         printf("SOURCE REACHED\n");
         fflush(stdout);
@@ -113,12 +119,12 @@ int OpenST_BRT3D_Trace(double *T, double *V,
         }
 
         if(ind_cur_i >= NI || ind_cur_j >= NJ || ind_cur_k >= NK){
-            errcode = OPENST_RAYTRACE_ERR_BORDER_PASSED;
+            errcode = OPENST_ERR_ALGORITHM;
             break;
         }
 
         if(OpenST_DYNARR_Pushback(arrptr, CUR) == NULL){
-            errcode = OPENST_RAYTRACE_ERR_MEM;
+            errcode = OPENST_ERR_MEMORY_ALLOC;
             goto EXIT;
         }
 
@@ -135,7 +141,7 @@ int OpenST_BRT3D_Trace(double *T, double *V,
     }
 
     if(OpenST_DYNARR_Shrink(arrptr) == NULL){
-        errcode = OPENST_RAYTRACE_ERR_MEM;
+        errcode = OPENST_ERR_MEMORY_ALLOC;
         goto EXIT;
     }
 
