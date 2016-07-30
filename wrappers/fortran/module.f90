@@ -1,5 +1,3 @@
-! preliminary fortran interface module for OpenST
-
 MODULE OPENST
                              
 INTERFACE 
@@ -29,9 +27,38 @@ INTERFACE
   END FUNCTION OpenST_LSM3D
 END INTERFACE
 
+INTERFACE
+  INTEGER(C_INT) FUNCTION OpenST_BRT3D_Trace(T,V, &
+  NI,NJ,NK,HI,HJ,HK,TSTEP, &
+  RCVI,RCVJ,RCVK,SRCI,SRCJ,SRCK, &
+  RAY,RAY_NI,RAY_NJ) &
+  BIND(C, NAME='OpenST_BRT3D_Trace')
+    use, intrinsic :: iso_c_binding
+    IMPLICIT NONE 
+    TYPE (C_PTR), VALUE :: T
+    TYPE (C_PTR), VALUE :: V
+    INTEGER (C_SIZE_T), VALUE :: NI
+    INTEGER (C_SIZE_T), VALUE :: NJ
+    INTEGER (C_SIZE_T), VALUE :: NK
+    REAL (C_DOUBLE), VALUE :: HI
+    REAL (C_DOUBLE), VALUE :: HJ
+    REAL (C_DOUBLE), VALUE :: HK
+    REAL (C_DOUBLE), VALUE :: TSTEP
+    REAL (C_DOUBLE), VALUE :: RCVI
+    REAL (C_DOUBLE), VALUE :: RCVJ
+    REAL (C_DOUBLE), VALUE :: RCVK
+    REAL (C_DOUBLE), VALUE :: SRCI
+    REAL (C_DOUBLE), VALUE :: SRCJ
+    REAL (C_DOUBLE), VALUE :: SRCK
+    TYPE (C_PTR), VALUE :: RAY
+    TYPE (C_PTR), VALUE :: RAY_NI
+    TYPE (C_PTR), VALUE :: RAY_NJ
+  END FUNCTION OpenST_BRT3D_Trace
+END INTERFACE
+
 CONTAINS
 
-SUBROUTINE OpenST_Fortran_Print_Arr(MAT)
+SUBROUTINE OpenST_Fortran_PrintArr(MAT)
 IMPLICIT NONE
 double precision, allocatable, intent(in) :: MAT(:,:,:)
 INTEGER i,j,k

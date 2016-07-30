@@ -1,3 +1,5 @@
 #!/bin/sh
-gfortran -fdiagnostics-color=always -O3 -Winline -Wall -Wextra -fmessage-length=0 -pedantic -fopenmp -c module.f95
-gfortran -fdiagnostics-color=always -O3 -Winline -Wall -Wextra -fmessage-length=0 -pedantic -fopenmp fort.f95 module.o ../../lib/libopenst.a -lm
+export FFLAGS="-O3 -std=f2003 -freal-4-real-8 -fdiagnostics-color=always -Winline -Wall -Wextra -fmessage-length=0 -pedantic -fopenmp"
+gfortran ${FFLAGS} -c module.f90
+gfortran -o BRT3D_EX1.exe ${FFLAGS} BRT3D_EX1.f90 module.o ../../lib/libopenst.a -lm
+gfortran -o EIKONAL_EX1.exe ${FFLAGS} EIKONAL_EX1.f90 module.o ../../lib/libopenst.a -lm

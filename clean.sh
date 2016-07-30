@@ -5,3 +5,5 @@ rm -rf build
 rm -rf lib
 rm -rf test/EIKONAL_EX1/bin
 rm -rf CMakeLists.txt.user
+cd wrappers/fortran
+sh clean.sh

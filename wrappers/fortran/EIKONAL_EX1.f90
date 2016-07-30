@@ -25,7 +25,8 @@ use omp_lib
     HJ = 1.0 / (NJ - 1)
     HK = 1.0 / (NK - 1)
     max_iter = 10
-    EPS = 0.0
+    EPS = 0.01 * MIN(HI,HJ,HK);
+    print '("EPS: ",E15.6)',EPS
     
     ALLOCATE ( U (NI, NJ, NK) ) 
     ALLOCATE ( V (NI, NJ, NK) ) 
@@ -64,7 +65,6 @@ use omp_lib
     U = RESHAPE( U, [NI,NJ,NK], order=[1,2,3])
     finish = omp_get_wtime()
     print '("RESHAPE C OUTPUT: ",f12.6," seconds.")',finish-start
-    call flush()
     
     it = 0
     L1 = 0.0

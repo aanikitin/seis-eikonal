@@ -95,7 +95,7 @@ int main(int argc, char *argv[]){
     double t1,t2;
     double L1, L2, Linf, Umin, Umax, Umean;
     size_t NI, NJ, NK;
-    double SRCI, SRCJ, SRCK;
+    double SRCI, SRCJ, SRCK, RCVI, RCVJ, RCVK;
     size_t BSIZE_I;
     size_t BSIZE_J;
     size_t BSIZE_K;
@@ -107,6 +107,8 @@ int main(int argc, char *argv[]){
     int usage_flag, errcode;
     size_t SRCidx_i, i, j, k;
     size_t *SRCidx, SRCidx_NI, SRCidx_NJ;
+    double *RAY;
+    size_t RAY_NI, RAY_NJ;
 
     if(argc > 1){
         usage_flag = 0;
@@ -149,6 +151,9 @@ int main(int argc, char *argv[]){
     LSM_UNLOCKED = malloc(NI * NJ * NK * sizeof(char));
     assert(LSM_UNLOCKED);
 
+    RCVI = 0.1;
+    RCVJ = 0.1;
+    RCVK = 0.1;
     SRCI = DEFAULT_SRC;
     SRCJ = DEFAULT_SRC;
     SRCK = DEFAULT_SRC;
@@ -175,19 +180,19 @@ int main(int argc, char *argv[]){
 #ifndef TEST_FSM
     IMP_NAME = OPENST_LSM3D_IMP_NAME;
     OpenST_LSM3D_Init_2(U,LSM_UNLOCKED,V,
-                      NI,NJ,NK,
-                      HI,HJ,HK,
-                      SRCI,SRCJ,SRCK,
-                      &SRCidx,&SRCidx_NI,&SRCidx_NJ,
-                      OPENST_FSM3D_INIT_DEFAULT);
+                        NI,NJ,NK,
+                        HI,HJ,HK,
+                        SRCI,SRCJ,SRCK,
+                        &SRCidx,&SRCidx_NI,&SRCidx_NJ,
+                        OPENST_FSM3D_INIT_DEFAULT);
 #else
     IMP_NAME = OPENST_FSM3D_IMP_NAME;
     OpenST_FSM3D_Init_2(U,V,
-                      NI,NJ,NK,
-                      HI,HJ,HK,
-                      SRCI,SRCJ,SRCK,
-                      &SRCidx,&SRCidx_NI,&SRCidx_NJ,
-                      OPENST_FSM3D_INIT_DEFAULT);
+                        NI,NJ,NK,
+                        HI,HJ,HK,
+                        SRCI,SRCJ,SRCK,
+                        &SRCidx,&SRCidx_NI,&SRCidx_NJ,
+                        OPENST_FSM3D_INIT_DEFAULT);
 #endif
     t2 = omp_get_wtime();
     printf("Initialization time: %e sec\n", t2 - t1);
@@ -240,6 +245,36 @@ int main(int argc, char *argv[]){
            EPS,max_iter,it,converged,EIK3D_Time,L1,L2,Linf,Umin,Umean,Umax,
            NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE_STATIC
            );
+
+
+    BRT3D_TSTEP = OpenST_BRT3D_SuggestTSTEP(1.0, HI, HJ, HK);
+    printf("TSTEP = %e\n",BRT3D_TSTEP);
+
+    t1 = omp_get_wtime();
+    errcode = OpenST_BRT3D_Trace(U, V, NI, NJ, NK, HI, HJ, HK, BRT3D_TSTEP,
+                                 RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK,
+                                 &RAY, &RAY_NI, &RAY_NJ);
+    t2 = omp_get_wtime();
+
+    printf("BRT3D time: %e sec, errcode %i\n", t2 - t1, errcode);
+    printf("RAY: %zu line segments\n",RAY_NI);
+    printf("RCV:\t\t{%e; %e; %e}\n", RCVI, RCVJ, RCVK);
+    printf("RAY[start]:\t{%e; %e; %e}\n",
+           RAY[OPENST_MEMADR_2D(0,0,RAY_NI,RAY_NJ)],
+            RAY[OPENST_MEMADR_2D(0,1,RAY_NI,RAY_NJ)],
+            RAY[OPENST_MEMADR_2D(0,2,RAY_NI,RAY_NJ)]);
+    printf("RAY[end]:\t{%e; %e; %e}\n",
+           RAY[OPENST_MEMADR_2D(RAY_NI - 1,0,RAY_NI,RAY_NJ)],
+            RAY[OPENST_MEMADR_2D(RAY_NI - 1,1,RAY_NI,RAY_NJ)],
+            RAY[OPENST_MEMADR_2D(RAY_NI - 1,2,RAY_NI,RAY_NJ)]);
+    printf("SRC:\t\t{%e; %e; %e}\n", SRCI, SRCJ, SRCK);
+
+    for(i = 0; i < RAY_NI; ++i){
+        printf("%zu %e %e %e\n",i,
+               RAY[OPENST_MEMADR_2D(i,0,RAY_NI,RAY_NJ)],
+                RAY[OPENST_MEMADR_2D(i,1,RAY_NI,RAY_NJ)],
+                RAY[OPENST_MEMADR_2D(i,2,RAY_NI,RAY_NJ)]);
+    }
 
     if(converged && it == 9){
         errcode = EXIT_SUCCESS;
