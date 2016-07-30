@@ -1,13 +1,16 @@
-function OpenST_LSM3D_TEST(NI, NJ, NK)
+function [U,RAY] = OpenST_LSM3D_TEST(NI, NJ, NK)
 
 H(1) = 1.0 / (NI - 1);
 H(2) = 1.0 / (NJ - 1);
 H(3) = 1.0 / (NK - 1);
+
+RCV = [.1 .1 .1];
 SRC = [.5 .5 .5];
 
 V = ones(NI, NJ, NK);
 
-EPS = 0.01 * max(H(:)) / max(V(:));
+TSTEP =  max(H(:)) / max(V(:));
+EPS = 0.01 * TSTEP;
 MAX_ITER = 10;
 
 tic;[U,c,it] = OpenST_LSM3D(V,SRC,H,EPS,MAX_ITER);t = toc;
@@ -15,7 +18,12 @@ fprintf('EIKONAL_EX1 test for OpenST_LSM3D MEX\n');
 fprintf('converged: %i; iterations: %i; seconds: %.5f\n',c,it,t);
 [L1, L2, LINF, UMIN, UMEAN, UMAX] = ex_check(U,SRC,H);
 fprintf('L1: %e; L2: %e; LINF: %e; UMIN: %e; UMEAN: %e; UMAX: %e\n', ...
-L1, L2, LINF, UMIN, UMEAN, UMAX);
+    L1, L2, LINF, UMIN, UMEAN, UMAX);
+
+RAY = OpenST_BRT3D(U,V,H,TSTEP,RCV,SRC);
+fprintf('RAY(1): %e %e %e\n',RAY(1,1),RAY(1,2),RAY(1,3));
+fprintf('RAY(end): %e %e %e\n',RAY(end,1),RAY(end,2),RAY(end,3));
+
 end
 
 function [L1, L2, LINF, UMIN, UMEAN, UMAX] = ex_check(U,SRC,H)

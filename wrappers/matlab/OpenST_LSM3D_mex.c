@@ -23,29 +23,30 @@ void mexFunction(int nlhs, mxArray *plhs[],
     double SRCI, SRCJ, SRCK, HI, HJ, HK;
     
     OPENST_MEX_CHECK((nrhs < 5), "Not enough input arguments.");
+    OPENST_MEX_CHECK((nrhs > 5), "Too many input arguments.");
+    OPENST_MEX_CHECK((nlhs < 3), "Not enough output arguments.");
+    OPENST_MEX_CHECK((nlhs > 3), "Too many output arguments.");
     
-    OPENST_MEX_CHECK(( nrhs > 5 ), "Too many input arguments.");
-    
-    OPENST_MEX_CHECK((OPENST_MEX_GetDoubleArray(prhs[0], &V, 
+    OPENST_MEX_CHECK((OPENST_MEX_GetDoubleArray(prhs[0], &V,
             &V_ndims, &V_dims)), NULL);
     OPENST_MEX_CHECK((V_ndims != 3), "V must be 3D.");
     
     OPENST_MEX_CHECK((OPENST_MEX_GetDoubleArray(prhs[1], &SRC, &SRC_ndims,
-            &SRC_dims)), NULL);    
+            &SRC_dims)), NULL);
     OPENST_MEX_CHECK((OPENST_MEX_GetNumel(SRC_ndims, SRC_dims) != 3),
             "numel(SRC) must be 3.");
-        
+    
     OPENST_MEX_CHECK((OPENST_MEX_GetDoubleArray(prhs[2], &H, &H_ndims,
             &H_dims)), NULL);
     OPENST_MEX_CHECK((OPENST_MEX_GetNumel(H_ndims, H_dims) != 3),
             "numel(H) must be 3.");
-        
+    
     OPENST_MEX_CHECK((OPENST_MEX_GetDoubleScalar(prhs[3], &EPS)),
             NULL);
     
     OPENST_MEX_CHECK((OPENST_MEX_GetDoubleScalar(prhs[4], &MAX_ITER)),
             NULL);
-    OPENST_MEX_CHECK(!OPENST_MEX_ValueIsInteger(MAX_ITER), 
+    OPENST_MEX_CHECK(!OPENST_MEX_ValueIsInteger(MAX_ITER),
             "MAX_ITER must be an integer value.");
     
     NI = V_dims[2];
@@ -63,7 +64,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
             mxREAL)) == NULL), NULL);
     OPENST_MEX_CHECK(((U = mxGetPr(plhs[0])) == NULL), NULL);
     
-    OPENST_MEX_CHECK(((LSM_UNLOCKED = mxMalloc(NI * NJ * NK * 
+    OPENST_MEX_CHECK(((LSM_UNLOCKED = mxMalloc(NI * NJ * NK *
             sizeof(double))) == NULL), NULL);
     
     OPENST_MEX_CHECK(((OpenST_LSM3D(U, LSM_UNLOCKED, V,
@@ -74,10 +75,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
             &it, &converged)
             != OPENST_ERR_SUCCESS)), "OpenST_LSM3D Error");
     
-    OPENST_MEX_CHECK(((plhs[1] = 
+    OPENST_MEX_CHECK(((plhs[1] =
             mxCreateDoubleScalar((double) converged)) == NULL), NULL);
     
-    OPENST_MEX_CHECK(((plhs[2] = 
+    OPENST_MEX_CHECK(((plhs[2] =
             mxCreateDoubleScalar((double) it)) == NULL), NULL);
     
     mxFree(LSM_UNLOCKED);

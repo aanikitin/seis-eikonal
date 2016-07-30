@@ -1,7 +1,7 @@
 #include "OpenST_MEX.h"
 
 
-void OPENST_MEX_PrintError(OPENST_MEX_ERRCODE errcode, char* errid, 
+void OPENST_MEX_PrintError(OPENST_MEX_ERRCODE errcode, char* errid,
         char *file, int line, char *msg){
     if(msg == NULL){
         mexErrMsgIdAndTxt(errid,"MEX Error in [%s,%i]: code %i.", \
@@ -13,15 +13,16 @@ void OPENST_MEX_PrintError(OPENST_MEX_ERRCODE errcode, char* errid,
 }
 
 
-OPENST_MEX_ERRCODE OPENST_MEX_GetDoubleArray(mxArray *INP, 
-        double **ptr, mwSize *ndims, mwSize **dims){
+OPENST_MEX_ERRCODE OPENST_MEX_GetDoubleArray(mxArray *INP,
+        double **ptr, mwSize *ndims,
+        mwSize **dims){
     
     if( !mxIsDouble(INP) ){
         return OPENST_MEX_ERRCODE_WRONG_TYPE;
     }
     
     *ndims = mxGetNumberOfDimensions(INP);
-        
+    
     *dims = mxGetDimensions(INP);
     
     *ptr = mxGetPr(INP);
