@@ -9,6 +9,7 @@ use omp_lib
     REAL (C_DOUBLE) :: di, dj, dk, dist
     INTEGER (C_INT) :: errcode
     INTEGER (C_SIZE_T):: i,j,k
+    INTEGER (C_SIZE_T) :: MAX_SEG
     double precision :: start, finish
     
     REAL (C_DOUBLE) :: TSTEP
@@ -31,8 +32,10 @@ use omp_lib
     HJ = 1.0 / (NJ - 1)
     HK = 1.0 / (NK - 1)
     TSTEP = MIN(HI,HJ,HK) / 1.0
+    MAX_SEG = (NI * NJ * NK);
     
     print '("TSTEP: ",E15.6)', TSTEP
+    print '("MAX_SEG: ",I22)', MAX_SEG
     
     ALLOCATE ( U (NI, NJ, NK) )
     ALLOCATE ( V (NI, NJ, NK) )
@@ -59,7 +62,7 @@ use omp_lib
     
     start = omp_get_wtime()
     errcode = OpenST_BRT3D_Trace(U_PTR,V_PTR,NI,NJ,NK,HI,HJ,HK,TSTEP,RCVI,RCVJ,RCVK, &
-    SRCI,SRCJ,SRCK,RAY_PTR_PTR,RAY_NI_PTR,RAY_NJ_PTR)
+    SRCI,SRCJ,SRCK,MAX_SEG,RAY_PTR_PTR,RAY_NI_PTR,RAY_NJ_PTR)
     finish = omp_get_wtime()
     print '("BRT3D: ",E15.6," seconds.")',finish-start
     

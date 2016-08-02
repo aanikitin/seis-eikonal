@@ -81,6 +81,14 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
     size_t SRCidx_NJ_loc;
     size_t SRCidx_ind;
 
+    if ( (SRCI < 0.0) || (SRCJ < 0.0) || (SRCK < 0.0) ||
+            (SRCI > ((NI - 1) * HI)) ||
+            (SRCJ > ((NJ - 1) * HJ)) ||
+            (SRCK > ((NK - 1) * HK)) ) {
+        errcode = OPENST_ERR_PARAM_INVALID;
+        goto EXIT;
+    }
+
     if((SRCidx != NULL) && (SRCidx_NI != NULL) && (SRCidx_NJ != NULL)){
         output_srcidx = 1;
     } else {
@@ -142,7 +150,7 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
 
         if (interp_dims == 3) {
 
-            OpenST_INTERP_Trilinear(&SRCV, SRCI, SRCJ, SRCK,
+            OpenST_INTERP_Trilinear_Kernel(&SRCV, SRCI, SRCJ, SRCK,
                                     V[OPENST_MEMADR_3D(ii[0], ji[0], ki[0], NI, NJ, NK)],
                     V[OPENST_MEMADR_3D(ii[0], ji[0], ki[1], NI, NJ, NK)],
                     V[OPENST_MEMADR_3D(ii[0], ji[1], ki[0], NI, NJ, NK)],
@@ -157,7 +165,7 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
         } else if (interp_dims == 2) {
 
             if (!interp_i) {
-                OpenST_INTERP_Bilinear(&SRCV, SRCJ, SRCK,
+                OpenST_INTERP_Bilinear_Kernel(&SRCV, SRCJ, SRCK,
                                        V[OPENST_MEMADR_3D(ii[0], ji[0], ki[0], NI, NJ, NK)],
                         V[OPENST_MEMADR_3D(ii[0], ji[0], ki[1], NI, NJ, NK)],
                         V[OPENST_MEMADR_3D(ii[0], ji[1], ki[0], NI, NJ, NK)],
@@ -165,7 +173,7 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
                         jc[0], kc[0],
                         jc[1], kc[1]);
             } else if (!interp_j) {
-                OpenST_INTERP_Bilinear(&SRCV, SRCI, SRCK,
+                OpenST_INTERP_Bilinear_Kernel(&SRCV, SRCI, SRCK,
                                        V[OPENST_MEMADR_3D(ii[0], ji[0], ki[0], NI, NJ, NK)],
                         V[OPENST_MEMADR_3D(ii[0], ji[0], ki[1], NI, NJ, NK)],
                         V[OPENST_MEMADR_3D(ii[1], ji[0], ki[0], NI, NJ, NK)],
@@ -173,7 +181,7 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
                         ic[0], kc[0],
                         ic[1], kc[1]);
             } else if (!interp_k) {
-                OpenST_INTERP_Bilinear(&SRCV, SRCI, SRCK,
+                OpenST_INTERP_Bilinear_Kernel(&SRCV, SRCI, SRCK,
                                        V[OPENST_MEMADR_3D(ii[0], ji[0], ki[0], NI, NJ, NK)],
                         V[OPENST_MEMADR_3D(ii[0], ji[1], ki[0], NI, NJ, NK)],
                         V[OPENST_MEMADR_3D(ii[1], ji[0], ki[0], NI, NJ, NK)],
@@ -185,17 +193,17 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
         } else if (interp_dims == 1) {
 
             if (interp_i) {
-                OpenST_INTERP_Linear(&SRCV, SRCI,
+                OpenST_INTERP_Linear_Kernel(&SRCV, SRCI,
                                      V[OPENST_MEMADR_3D(ii[0], ji[0], ki[0], NI, NJ, NK)],
                         V[OPENST_MEMADR_3D(ii[1], ji[0], ki[0], NI, NJ, NK)],
                         ic[0], ic[1]);
             } else if (interp_j) {
-                OpenST_INTERP_Linear(&SRCV, SRCJ,
+                OpenST_INTERP_Linear_Kernel(&SRCV, SRCJ,
                                      V[OPENST_MEMADR_3D(ii[0], ji[0], ki[0], NI, NJ, NK)],
                         V[OPENST_MEMADR_3D(ii[0], ji[1], ki[0], NI, NJ, NK)],
                         jc[0], jc[1]);
             } else if (interp_k) {
-                OpenST_INTERP_Linear(&SRCV, SRCK,
+                OpenST_INTERP_Linear_Kernel(&SRCV, SRCK,
                                      V[OPENST_MEMADR_3D(ii[0], ji[0], ki[0], NI, NJ, NK)],
                         V[OPENST_MEMADR_3D(ii[0], ji[0], ki[1], NI, NJ, NK)],
                         kc[0], kc[1]);

@@ -58,6 +58,7 @@ int main(int argc, char *argv[]){
     double *RAY;
     size_t RAY_NI, RAY_NJ;
     size_t i;
+    size_t MAX_SEG;
 
     if(argc > 1){
         usage_flag = 0;
@@ -78,9 +79,9 @@ int main(int argc, char *argv[]){
     V = malloc(NI * NJ * NK * sizeof(double));
     assert(V);
 
-    RCVI = DEFAULT_RCV;
-    RCVJ = DEFAULT_RCV;
-    RCVK = DEFAULT_RCV;
+    RCVI = DEFAULT_DOMAIN_SIZE;
+    RCVJ = DEFAULT_DOMAIN_SIZE;
+    RCVK = 0.0;
     SRCI = DEFAULT_SRC;
     SRCJ = DEFAULT_SRC;
     SRCK = DEFAULT_SRC;
@@ -93,15 +94,18 @@ int main(int argc, char *argv[]){
     ex_init(U, V, NI, NJ, NK, HI, HJ, HK, SRCI, SRCJ, SRCK);
 
     BRT3D_TSTEP = OpenST_BRT3D_SuggestTSTEP(1.0, HI, HJ, HK);
-    printf("TSTEP:\t%e\n",BRT3D_TSTEP);
+    MAX_SEG = (NI * NJ * NK);
+    printf("TSTEP:\t\t%e\nMAX_SEG:\t%zu\n",BRT3D_TSTEP,MAX_SEG);
 
     t1 = omp_get_wtime();
     errcode = OpenST_BRT3D_Trace(U, V, NI, NJ, NK, HI, HJ, HK, BRT3D_TSTEP,
                                  RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK,
+                                 MAX_SEG,
                                  &RAY, &RAY_NI, &RAY_NJ);
     t2 = omp_get_wtime();
 
     if(errcode != OPENST_ERR_SUCCESS){
+        fprintf(stderr,"errcode: %i\n",errcode);
         goto EXIT;
     }
 

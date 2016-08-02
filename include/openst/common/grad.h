@@ -10,6 +10,9 @@ extern "C" {
 #include "openst/common/memadr.h"
 #include "openst/common/macros.h"
 
+OPENST_API void OpenST_GRAD_Grad_Kernel(double *left, double *center,
+                                        double *right, double H, double *grad);
+
 OPENST_API void OpenST_GRAD_Grad3D(double *A, size_t NI, size_t NJ, size_t NK,
             double HI, double HJ, double HK,
             size_t i, size_t j, size_t k,

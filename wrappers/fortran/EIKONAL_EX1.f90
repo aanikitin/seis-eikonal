@@ -14,9 +14,9 @@ use omp_lib
     INTEGER (C_SIZE_T):: i,j,k
     double precision :: start, finish
     
-    NI = 320
-    NJ = 320
-    NK = 320
+    NI = 100
+    NJ = 100
+    NK = 100
     
     SRCI = 0.5
     SRCJ = 0.5

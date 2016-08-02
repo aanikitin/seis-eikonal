@@ -1,3 +1,4 @@
+//TODO: recheck and cleanup
 //TODO: improve accuracy
 #include "openst/raytrace/backtrace.h"
 
@@ -21,18 +22,73 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
     double HI, double HJ, double HK,
     double TSTEP,
     double CURI, double CURJ, double CURK,
-    size_t ind_cur_i, size_t ind_cur_j, size_t ind_cur_k,
     double *DSTI, double *DSTJ, double *DSTK) {
 
+    OPENST_ERR errcode = OPENST_ERR_SUCCESS;
+    double TC, TIL, TIR, TJL, TJR, TKL, TKR;
+    double *TILa, *TIRa, *TJLa, *TJRa, *TKLa, *TKRa;
     double gradi, gradj, gradk, grad_length;
     double vel, vali, valj, valk;
 
-    OpenST_GRAD_Grad3D(T, NI, NJ, NK, HI, HJ, HK, ind_cur_i, ind_cur_j, ind_cur_k,
-        &gradi, &gradj, &gradk);
+    if((CURI < 0) || (CURJ < 0) || (CURK < 0) ||
+            (CURI > ((double)(NI - 1) * HI)) || 
+			(CURJ > ((double)(NJ - 1) * HJ)) ||
+            (CURK > ((double)(NK - 1) * HK)) ){
+        errcode = OPENST_ERR_ALG_DOMAIN;
+        goto EXIT;
+    }
+
+    OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK,&TC);
+
+    TILa = &TIL;
+    if(CURI >= HI/2.0){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI - HI/2.0,CURJ,CURK,TILa);
+    } else {
+        TILa = NULL;
+    }
+
+    TIRa = &TIR;
+    if( (CURI + HI/2.0) <= ((NI - 1)* HI) ){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI + HI/2.0,CURJ,CURK,TIRa);
+    } else {
+        TIRa = NULL;
+    }
+
+    TJLa = &TJL;
+    if(CURJ >= HJ/2.0){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ - HJ/2.0,CURK,TJLa);
+    } else {
+        TJLa = NULL;
+    }
+
+    TJRa = &TJR;
+    if( (CURJ + HJ / 2.0) <= ((NJ - 1)* HJ) ){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ + HJ/2.0,CURK,TJRa);
+    } else {
+        TJRa = NULL;
+    }
+
+    TKLa = &TKL;
+    if(CURK >= HK/2.0){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK - HK/2.0,TKLa);
+    } else {
+        TKLa = NULL;
+    }
+
+    TKRa = &TKR;
+    if( (CURK + HK / 2.0) <= ((NK - 1)* HK) ){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK + HK/2.0,TKRa);
+    } else {
+        TKRa = NULL;
+    }
+
+    OpenST_GRAD_Grad_Kernel(TILa,&TC,TIRa,HI,&gradi);
+    OpenST_GRAD_Grad_Kernel(TJLa,&TC,TJRa,HJ,&gradj);
+    OpenST_GRAD_Grad_Kernel(TKLa,&TC,TKRa,HK,&gradk);
 
     grad_length = sqrt(pow(gradi, 2.0) + pow(gradj, 2.0) + pow(gradk, 2.0));
 
-    vel = V[OPENST_MEMADR_3D(ind_cur_i, ind_cur_j, ind_cur_k, NI, NJ, NK)];
+    OpenST_INTERP_Trilinear(V,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK,&vel);
 
 #if DEBUG_LOG
     printf("GRAD: [%f %f %f]/%f V %f\n", gradi, gradj, gradk, grad_length, vel);
@@ -44,14 +100,16 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
         valk = CURK - gradk / grad_length * TSTEP * vel;
     }
     else {
-        return OPENST_ERR_DIV_BY_ZERO;
+        errcode = OPENST_ERR_DIV_BY_ZERO;
+        goto EXIT;
     }
 
     *DSTI = vali;
     *DSTJ = valj;
     *DSTK = valk;
 
-    return OPENST_ERR_SUCCESS;
+EXIT:
+    return errcode;
 }
 
 
@@ -60,13 +118,14 @@ OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
     double HI, double HJ, double HK, double TSTEP,
     double RCVI, double RCVJ, double RCVK,
     double SRCI, double SRCJ, double SRCK,
+    size_t MAX_SEG,
     double **RAY, size_t *RAY_NI, size_t *RAY_NJ) {
 
-    OPENST_ERR errcode;
-    size_t ind_cur_i, ind_cur_j, ind_cur_k;
+    OPENST_ERR errcode = OPENST_ERR_ALG_EARLY_TERM;
     double CUR[3];
     double DST[3];
     double SRCI_L, SRCI_H, SRCJ_L, SRCJ_H, SRCK_L, SRCK_H;
+    size_t numseg;
 
     struct OpenST_DYNARR arr;
     struct OpenST_DYNARR *arrptr = &arr;
@@ -87,39 +146,20 @@ OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
         goto EXIT;
     }
 
-    int i = 0;
-    while (1) {
-        i++;
-        if (i > 200) break;
-        if (CUR[0] < 0 || CUR[1] < 0 || CUR[2] < 0) {
-            errcode = OPENST_ERR_ALGORITHM;
-            break;
-        }
-
-        if ((errcode = OpenST_CRS_Cart2Ind(CUR[0], HI, &ind_cur_i))) {
-            goto EXIT;
-        }
-        if ((errcode = OpenST_CRS_Cart2Ind(CUR[1], HJ, &ind_cur_j))) {
-            goto EXIT;
-        }
-        if ((errcode = OpenST_CRS_Cart2Ind(CUR[2], HK, &ind_cur_k))) {
-            goto EXIT;
-        }
+    numseg = 0;
+    while (numseg < MAX_SEG) {
 
 #if DEBUG_LOG
-        printf("[%zu;%zu;%zu] - [%e;%e;%e]\n", ind_cur_i, ind_cur_j, ind_cur_k, CUR[0], CUR[1], CUR[2]);
+        printf("[%e;%e;%e]\n", CUR[0], CUR[1], CUR[2]);
         fflush(stdout);
 #endif
-
-        if (ind_cur_i > NI || ind_cur_j > NJ || ind_cur_k > NK) {
-            errcode = OPENST_ERR_ALGORITHM;
-            break;
-        }
 
         if (OpenST_DYNARR_Pushback(arrptr, CUR) == NULL) {
             errcode = OPENST_ERR_MEMORY_ALLOC;
             goto EXIT;
         }
+
+        ++numseg;
 
         if ((CUR[0] > SRCI_L) && (CUR[0] < SRCI_H) &&
             (CUR[1] > SRCJ_L) && (CUR[1] < SRCJ_H) &&
@@ -134,7 +174,6 @@ OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
 
         if ((errcode = OpenST_BRT3D_Step(T, V, NI, NJ, NK, HI, HJ, HK, TSTEP,
             CUR[0], CUR[1], CUR[2],
-            ind_cur_i, ind_cur_j, ind_cur_k,
             &DST[0], &DST[1], &DST[2]))) {
             goto EXIT;
         }

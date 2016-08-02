@@ -1,6 +1,28 @@
 #include "openst/common/grad.h"
 
 
+void OpenST_GRAD_Grad_Kernel(double *left, double *center, double *right,
+                             double H, double *grad){
+    double f1, f2;
+    double divh;
+
+    divh = H;
+    if(left == NULL){
+        f1 = *center;
+        f2 = *right;
+    } else if (right == NULL) {
+        f1 = *left;
+        f2 = *center;
+    } else {
+        f1 = *left;
+        f2 = *right;
+        divh *= 2.0;
+    }
+    *grad = (f2 - f1)/divh;
+
+}
+
+
 void OpenST_GRAD_Grad3D(double *A, size_t NI, size_t NJ, size_t NK,
             double HI, double HJ, double HK,
             size_t i, size_t j, size_t k,

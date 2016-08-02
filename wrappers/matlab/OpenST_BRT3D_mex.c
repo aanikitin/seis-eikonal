@@ -27,11 +27,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
     double HI, HJ, HK;
     double RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK;
     double *RAY, *RAYout;
-    size_t RAY_NI, RAY_NJ;
+    size_t RAY_NI, RAY_NJ, MAX_SEG;
     mwSize RAY_dims[2];
     
-    OPENST_MEX_CHECK((nrhs < 6), "Not enough input arguments.");
-    OPENST_MEX_CHECK((nrhs > 6), "Too many input arguments.");
+    OPENST_MEX_CHECK((nrhs < 7), "Not enough input arguments.");
+    OPENST_MEX_CHECK((nrhs > 7), "Too many input arguments.");
     OPENST_MEX_CHECK((nlhs < 1), "Not enough output arguments.");
     OPENST_MEX_CHECK((nlhs > 1), "Too many output arguments.");
     
@@ -66,6 +66,11 @@ void mexFunction(int nlhs, mxArray *plhs[],
     OPENST_MEX_CHECK((OPENST_MEX_GetNumel(SRC_ndims, SRC_dims) != 3),
             "numel(SRC) must be 3.");
     
+    OPENST_MEX_CHECK((OPENST_MEX_GetDoubleScalar(prhs[6], &MAX_SEG)),
+            NULL);
+    OPENST_MEX_CHECK(!OPENST_MEX_ValueIsInteger(MAX_SEG),
+            "MAX_SEG must be an integer value.");
+    
     NI = V_dims[2];
     NJ = V_dims[1];
     NK = V_dims[0];
@@ -81,7 +86,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     OPENST_MEX_CHECK((OpenST_BRT3D_Trace(T, V,
             NI, NJ, NK, HI, HJ, HK, TSTEP,
-            RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK,
+            RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK, MAX_SEG,
             &RAY, &RAY_NI, &RAY_NJ)), "OpenST_BRT3D Error");
     
     RAY_dims[0] = RAY_NJ;

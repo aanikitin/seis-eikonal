@@ -7,20 +7,28 @@ extern "C" {
 
 #include <stddef.h>
 #include <stdint.h>
+#include <math.h>
 
 #include "openst/common/macros.h"
+#include "openst/common/memadr.h"
+#include "openst/common/error.h"
 
-OPENST_API void OpenST_INTERP_Linear(double *f, double i,
+typedef enum OPENST_INTERP_METHOD_enum{
+    OPENST_INTERP_LINEAR,
+    OPENST_INTERP_DEFAULT = OPENST_INTERP_LINEAR
+} OPENST_INTERP_METHOD;
+
+OPENST_API void OpenST_INTERP_Linear_Kernel(double *f, double i,
                                     double f0, double f1,
                                     double i0, double i1);
 
-OPENST_API void OpenST_INTERP_Bilinear(double *f, double i, double j,
+OPENST_API void OpenST_INTERP_Bilinear_Kernel(double *f, double i, double j,
                                       double f00, double f01,
                                       double f10, double f11,
                                       double i0, double j0,
                                       double i1, double j1);
 
-OPENST_API void OpenST_INTERP_Trilinear(double *f,
+OPENST_API void OpenST_INTERP_Trilinear_Kernel(double *f,
                                        double i, double j, double k,
                                        double f000, double f001,
                                        double f010, double f011,
@@ -28,6 +36,11 @@ OPENST_API void OpenST_INTERP_Trilinear(double *f,
                                        double f110, double f111,
                                        double i0, double j0, double k0,
                                        double i1, double j1, double k1);
+
+OPENST_API void OpenST_INTERP_Trilinear(double *A, size_t NI, size_t NJ, size_t NK,
+                             double HI, double HJ, double HK,
+                             double PI, double PJ, double PK,
+                             double *VAL);
 
 #ifdef __cplusplus
 }
