@@ -31,7 +31,7 @@ use omp_lib
     HI = 1.0 / (NI - 1)
     HJ = 1.0 / (NJ - 1)
     HK = 1.0 / (NK - 1)
-    TSTEP = MIN(HI,HJ,HK) / 1.0
+    TSTEP = MIN(HI,HJ,HK) / 1.0 * 0.999
     MAX_SEG = (NI * NJ * NK);
     
     print '("TSTEP: ",E15.6)', TSTEP

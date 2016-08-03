@@ -79,9 +79,9 @@ int main(int argc, char *argv[]){
     V = malloc(NI * NJ * NK * sizeof(double));
     assert(V);
 
-    RCVI = DEFAULT_DOMAIN_SIZE;
-    RCVJ = DEFAULT_DOMAIN_SIZE;
-    RCVK = 0.0;
+    RCVI = DEFAULT_RCV;
+    RCVJ = DEFAULT_RCV;
+    RCVK = DEFAULT_RCV;
     SRCI = DEFAULT_SRC;
     SRCJ = DEFAULT_SRC;
     SRCK = DEFAULT_SRC;

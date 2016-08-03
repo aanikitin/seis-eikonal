@@ -2,6 +2,7 @@
 //TODO: improve accuracy
 #include "openst/raytrace/backtrace.h"
 
+#define TSTEP_DEFAULT_MULT 0.999
 #define DEBUG_LOG 0
 
 #include <float.h>
@@ -12,7 +13,7 @@
 
 
 double OpenST_BRT3D_SuggestTSTEP(double vmax, double HI, double HJ, double HK) {
-    double tstep = fmin(HI, (fmin(HJ, HK))) / vmax;
+    double tstep = fmin(HI, (fmin(HJ, HK))) / vmax * TSTEP_DEFAULT_MULT;
     return tstep;
 }
 
@@ -30,8 +31,13 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
     double gradi, gradj, gradk, grad_length;
     double vel, vali, valj, valk;
 
+    /*
+     * TODO: check can fail on MAX domain edge on certain grid sizes and steps
+     * store DOMAIN_MAX and compare with it in the future release,
+     * do not recalculate
+     */
     if((CURI < 0) || (CURJ < 0) || (CURK < 0) ||
-            (CURI > ((double)(NI - 1) * HI)) || 
+            (CURI > ((double)(NI - 1) * HI)) ||
 			(CURJ > ((double)(NJ - 1) * HJ)) ||
             (CURK > ((double)(NK - 1) * HK)) ){
         errcode = OPENST_ERR_ALG_DOMAIN;
@@ -48,7 +54,7 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
     }
 
     TIRa = &TIR;
-    if( (CURI + HI/2.0) <= ((NI - 1)* HI) ){
+    if( (CURI + HI/2.0) <= ((double)(NI - 1) * HI) ){
         OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI + HI/2.0,CURJ,CURK,TIRa);
     } else {
         TIRa = NULL;
@@ -62,7 +68,7 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
     }
 
     TJRa = &TJR;
-    if( (CURJ + HJ / 2.0) <= ((NJ - 1)* HJ) ){
+    if( (CURJ + HJ / 2.0) <= ((double)(NJ - 1) * HJ) ){
         OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ + HJ/2.0,CURK,TJRa);
     } else {
         TJRa = NULL;
@@ -76,7 +82,7 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
     }
 
     TKRa = &TKR;
-    if( (CURK + HK / 2.0) <= ((NK - 1)* HK) ){
+    if( (CURK + HK / 2.0) <= ((double)(NK - 1) * HK) ){
         OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK + HK/2.0,TKRa);
     } else {
         TKRa = NULL;
@@ -181,15 +187,6 @@ OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
         CUR[0] = DST[0];
         CUR[1] = DST[1];
         CUR[2] = DST[2];
-    }
-
-    CUR[0] = SRCI;
-    CUR[1] = SRCJ;
-    CUR[2] = SRCK;
-
-    if (OpenST_DYNARR_Pushback(arrptr, CUR) == NULL) {
-        errcode = OPENST_ERR_MEMORY_ALLOC;
-        goto EXIT;
     }
 
     if (OpenST_DYNARR_Shrink(arrptr) == NULL) {

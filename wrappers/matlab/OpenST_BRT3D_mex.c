@@ -26,8 +26,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
     size_t NI, NJ, NK;
     double HI, HJ, HK;
     double RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK;
+    double MAX_SEG;
     double *RAY, *RAYout;
-    size_t RAY_NI, RAY_NJ, MAX_SEG;
+    size_t RAY_NI, RAY_NJ;
     mwSize RAY_dims[2];
     
     OPENST_MEX_CHECK((nrhs < 7), "Not enough input arguments.");
@@ -68,7 +69,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     
     OPENST_MEX_CHECK((OPENST_MEX_GetDoubleScalar(prhs[6], &MAX_SEG)),
             NULL);
-    OPENST_MEX_CHECK(!OPENST_MEX_ValueIsInteger(MAX_SEG),
+    OPENST_MEX_CHECK((!OPENST_MEX_ValueIsInteger(MAX_SEG)),
             "MAX_SEG must be an integer value.");
     
     NI = V_dims[2];
@@ -83,10 +84,10 @@ void mexFunction(int nlhs, mxArray *plhs[],
     RCVI = RCV[0];
     RCVJ = RCV[1];
     RCVK = RCV[2];
-    
+        
     OPENST_MEX_CHECK((OpenST_BRT3D_Trace(T, V,
             NI, NJ, NK, HI, HJ, HK, TSTEP,
-            RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK, MAX_SEG,
+            RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK, (size_t) MAX_SEG,
             &RAY, &RAY_NI, &RAY_NJ)), "OpenST_BRT3D Error");
     
     RAY_dims[0] = RAY_NJ;

@@ -9,14 +9,14 @@ extern "C" {
 #include "matrix.h"
 #include <math.h>
 
-#define OPENST_MEX_ERRID __FUNCTION__ ## ":Error"
+#define OPENST_MEX_ERRID __FUNCTION__##":Error"
 
 #define OPENST_MEX_CHECK(x,MSG) \
     do { \
-    int errcode = (x); \
+    OPENST_MEX_ERRCODE errcode = (x); \
     if (errcode != 0) { \
     OPENST_MEX_PrintError(errcode, OPENST_MEX_ERRID, \
-    __FUNCTION__, __LINE__, (MSG)); \
+    __FUNCTION__, __LINE__, MSG); \
 } \
 } while (0)
 
