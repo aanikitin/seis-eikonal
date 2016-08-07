@@ -1,4 +1,6 @@
 project(OpenST)
+cmake_minimum_required(VERSION 2.8)
+# set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # OpenST uses C99 standard extensively
 macro(use_c99)
@@ -13,11 +15,14 @@ endmacro(use_c99)
 
 use_c99()
 
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type: Debug | Release" FORCE)
+endif()
+
 set(OPENST_VERSION "0.2.0")
 set(OPENST_SOVERSION "0.2")
 message(STATUS "OPENST_SOVERSION " ${OPENST_SOVERSION})
 message(STATUS "OPENST_VERSION " ${OPENST_VERSION})
-set(CMAKE_BUILD_TYPE Release)
 set(CMAKE_SKIP_RPATH TRUE)
 
 if(NOT MSVC)
@@ -27,10 +32,6 @@ elseif(MSVC)
 set(OPENST_DEFAULT_FSM3D "fsm3d_bfsm_openmp_v2.c")
 set(OPENST_DEFAULT_LSM3D "lsm3d_blsm_openmp_v2.c")
 endif()
-
-cmake_minimum_required(VERSION 2.8)
-# set(CMAKE_BUILD_TYPE Release)
-# set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 # set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
@@ -50,10 +51,11 @@ endif()
 message(STATUS "CMAKE_C_COMPILER: ${CMAKE_C_COMPILER} [${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}]")
 
 if(NOT MSVC)
+        set(CMAKE_C_FLAGS_DEBUG "-g -O0")
 	if(NOT DEFINED C_FLAGS_OPT)
-          set(C_FLAGS_OPT "-O3" CACHE STRING "Compiler optimization flags" FORCE)
+          set(CMAKE_C_FLAGS_RELEASE "-O3" CACHE STRING "Compiler optimization flags" FORCE)
 	endif()
-        set(CMAKE_C_FLAGS "${C_FLAGS_OPT} -Winline -Wall -Wextra -Wconversion -Wfatal-errors -Wdouble-promotion -fmessage-length=0 -pedantic -fopenmp ${CMAKE_C_FLAGS}")
+        set(CMAKE_C_FLAGS "-Winline -Wall -Wextra -Wconversion -Wfatal-errors -Wdouble-promotion -fmessage-length=0 -pedantic -fopenmp ${CMAKE_C_FLAGS}")
 	if(CMAKE_COMPILER_IS_GNUCC)
 		if(${CMAKE_C_COMPILER_VERSION} VERSION_GREATER "4.9.0")
 			set(CMAKE_C_FLAGS "-fdiagnostics-color=always ${CMAKE_C_FLAGS}")
@@ -64,6 +66,15 @@ elseif(MSVC)
 	  set(C_FLAGS_OPT "/O2" CACHE STRING "Compiler optimization flags")
 	endif()
 	set(CMAKE_C_FLAGS "${C_FLAGS_OPT} /openmp")
+endif()
+
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+message(STATUS "CMAKE_C_FLAGS_DEBUG: ${CMAKE_C_FLAGS_DEBUG}")
+message(STATUS "CMAKE_C_FLAGS_RELEASE: ${CMAKE_C_FLAGS_RELEASE}")
+if (${CMAKE_BUILD_TYPE} MATCHES Debug)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_DEBUG} ${CMAKE_C_FLAGS}")
+elseif (${CMAKE_BUILD_TYPE} MATCHES Release)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_RELEASE} ${CMAKE_C_FLAGS}")
 endif()
 
 message(STATUS "CMAKE_C_FLAGS: ${CMAKE_C_FLAGS}")

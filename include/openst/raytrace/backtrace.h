@@ -15,6 +15,7 @@ extern "C" {
 #include "openst/common/macros.h"
 #include "openst/common/error.h"
 #include "openst/common/interp.h"
+#include "openst/common/float.h"
 
 OPENST_API double OpenST_BRT3D_SuggestTSTEP(double vmax,
                                double HI, double HJ, double HK);

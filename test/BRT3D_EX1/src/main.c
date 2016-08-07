@@ -11,8 +11,8 @@
 
 #define DEFAULT_DOMAIN_SIZE 1.0
 #define DEFAULT_SRC 0.5
-#define DEFAULT_RCV 0.1
-#define DEFAULT_GRID_SIZE 100u
+#define DEFAULT_RCV 1.0
+#define DEFAULT_GRID_SIZE 50u
 
 
 void ex_init(double *U, double *V, size_t NI, size_t NJ, size_t NK,
@@ -38,8 +38,9 @@ void ex_init(double *U, double *V, size_t NI, size_t NJ, size_t NK,
 void app_info(char *BIN_NAME,int usage){
     printf("TEST_ID: %s\n",TEST_ID);
     if(usage){
-        printf("Usage: %s [NI NJ NK]\n" \
-               "\t[NI NJ NK] - grid size\n"
+        printf("Usage: %s [NI NJ NK] [RCVI RCVJ RCVK]\n" \
+               "\t[NI NJ NK] - grid size\n" \
+               "\t[RCVI RCVJ RCVK] - receiver coordinates\n" \
                "Running using default values...\n\n",BIN_NAME);
     }
 
@@ -75,14 +76,21 @@ int main(int argc, char *argv[]){
 
     app_info(argv[0],usage_flag);
 
-    U = malloc(NI * NJ * NK * sizeof(double));
+    U = (double *) malloc(NI * NJ * NK * sizeof(double));
     assert(U);
-    V = malloc(NI * NJ * NK * sizeof(double));
+    V = (double *) malloc(NI * NJ * NK * sizeof(double));
     assert(V);
 
-    RCVI = DEFAULT_RCV;
-    RCVJ = DEFAULT_RCV;
-    RCVK = DEFAULT_RCV;
+    if(argc > 4){
+        RCVI = atof(argv[4]);
+        RCVJ = atof(argv[5]);
+        RCVK = atof(argv[6]);
+    } else {
+        RCVI = DEFAULT_RCV;
+        RCVJ = DEFAULT_RCV;
+        RCVK = DEFAULT_RCV;
+    }
+
     SRCI = DEFAULT_SRC;
     SRCJ = DEFAULT_SRC;
     SRCK = DEFAULT_SRC;

@@ -18,10 +18,9 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Point(double *U, double *V,
     size_t SRCidx_NI_loc;
     size_t SRCidx_NJ_loc;
 
-    if ( (SRCI < 0.0) || (SRCJ < 0.0) || (SRCK < 0.0) ||
-         (SRCI > ((double)(NI - 1) * HI)) ||
-         (SRCJ > ((double)(NJ - 1) * HJ)) ||
-         (SRCK > ((double)(NK - 1) * HK)) ) {
+    if ( OpenST_CRS_IsPointWithinBounds(SRCI, SRCJ, SRCK,
+                                        NI, NJ, NK,
+                                        HI, HJ, HK) ) {
         errcode = OPENST_ERR_PARAM_INVALID;
         goto EXIT;
     }
@@ -88,12 +87,9 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
     size_t SRCidx_NJ_loc;
     size_t SRCidx_ind;
 
-    if ( (SRCI < 0.0) ||
-         (SRCJ < 0.0) ||
-         (SRCK < 0.0) ||
-         (SRCI > ((double)(NI - 1) * HI)) ||
-         (SRCJ > ((double)(NJ - 1) * HJ)) ||
-         (SRCK > ((double)(NK - 1) * HK)) ) {
+    if ( OpenST_CRS_IsPointWithinBounds(SRCI, SRCJ, SRCK,
+                                        NI, NJ, NK,
+                                        HI, HJ, HK) ) {
         errcode = OPENST_ERR_PARAM_INVALID;
         goto EXIT;
     }

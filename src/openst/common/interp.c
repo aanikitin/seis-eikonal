@@ -104,33 +104,37 @@ OPENST_API void OpenST_INTERP_Trilinear_Neighboors(
     double ic[static 2], double jc[static 2], double kc[static 2],
     int *interp_i, int *interp_j, int *interp_k, int *interp_dims){
 
-    ii[0] = (size_t) floor(PI / HI);
-    ic[0] = (double) ii[0] * HI;
-
-    ii[1] = (size_t) ceil(PI / HI);
-    ic[1] = (double) ii[1] * HI;
-
-    ji[0] = (size_t) floor(PJ / HJ);
-    jc[0] = (double) ji[0] * HJ;
-
-    ji[1] = (size_t) ceil(PJ / HJ);
-    jc[1] = (double) ji[1] * HJ;
-
-    ki[0] = (size_t) floor(PK / HK);
-    kc[0] = (double) ki[0] * HK;
-
-    ki[1] = (size_t) ceil(PK / HK);
-    kc[1] = (double) ki[1] * HK;
+    *interp_i = OpenST_FLOAT_GetNeighboorSizeT(PI / HI, &ii[0], &ii[1]);
+    *interp_j = OpenST_FLOAT_GetNeighboorSizeT(PJ / HJ, &ji[0], &ji[1]);
+    *interp_k = OpenST_FLOAT_GetNeighboorSizeT(PK / HK, &ki[0], &ki[1]);
 
     *interp_dims = 0;
-    if((*interp_i = (ii[0] != ii[1]))){
+
+    if (*interp_i) {
         ++(*interp_dims);
+        ic[0] = (double) ii[0] * HI;
+        ic[1] = (double) ii[1] * HI;
+    } else {
+        ic[0] = PI;
+        ic[1] = PI;
     }
-    if((*interp_j = (ji[0] != ji[1]))){
+
+    if (*interp_j) {
         ++(*interp_dims);
+        jc[0] = (double) ji[0] * HJ;
+        jc[1] = (double) ji[1] * HJ;
+    } else {
+        jc[0] = PJ;
+        jc[1] = PJ;
     }
-    if((*interp_k = (ki[0] != ki[1]))){
+
+    if (*interp_k) {
         ++(*interp_dims);
+        kc[0] = (double) ki[0] * HK;
+        kc[1] = (double) ki[1] * HK;
+    } else {
+        kc[0] = PK;
+        kc[1] = PK;
     }
 
 }

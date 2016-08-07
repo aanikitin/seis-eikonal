@@ -8,10 +8,12 @@ extern "C" {
 #include <stddef.h>
 #include <stdint.h>
 #include <math.h>
+#include <float.h>
 
 #include "openst/common/macros.h"
 #include "openst/common/memadr.h"
 #include "openst/common/error.h"
+#include "openst/common/float.h"
 
 typedef enum OPENST_INTERP_METHOD_enum{
     OPENST_INTERP_LINEAR,

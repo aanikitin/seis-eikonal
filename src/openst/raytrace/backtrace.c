@@ -5,8 +5,6 @@
 #define TSTEP_DEFAULT_MULT 0.999
 #define DEBUG_LOG 0
 
-#include <float.h>
-
 #if DEBUG_LOG
 #include <stdio.h>
 #endif
@@ -31,15 +29,9 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
     double gradi, gradj, gradk, grad_length;
     double vel, vali, valj, valk;
 
-    /*
-     * TODO: check can fail on MAX domain edge on certain grid sizes and steps
-     * store DOMAIN_MAX and compare with it in the future release,
-     * do not recalculate
-     */
-    if((CURI < 0) || (CURJ < 0) || (CURK < 0) ||
-            (CURI > ((double)(NI - 1) * HI)) ||
-			(CURJ > ((double)(NJ - 1) * HJ)) ||
-            (CURK > ((double)(NK - 1) * HK)) ){
+    if( OpenST_CRS_IsPointWithinBounds(CURI, CURJ, CURK,
+                                       NI, NJ, NK,
+                                       HI, HJ, HK) ){
         errcode = OPENST_ERR_ALG_OUT_OF_BOUNDS;
         goto EXIT;
     }
@@ -156,7 +148,7 @@ OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
     while (numseg < MAX_SEG) {
 
 #if DEBUG_LOG
-        printf("[%e;%e;%e]\n", CUR[0], CUR[1], CUR[2]);
+        printf("[%.20e;%.20e;%.20e]\n", CUR[0], CUR[1], CUR[2]);
         fflush(stdout);
 #endif
 
@@ -194,7 +186,7 @@ OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
         goto EXIT;
     }
 
-    *RAY = arr.data;
+    *RAY = (double *) arr.data;
     *RAY_NJ = 3;
     *RAY_NI = arr.num;
 
