@@ -110,9 +110,9 @@ int main(int argc, char *argv[]){
 
     if(argc > 1){
         usage_flag = 0;
-        NI = atoi(argv[1]);
-        NJ = atoi(argv[2]);
-        NK = atoi(argv[3]);
+        NI = (size_t) atoi(argv[1]);
+        NJ = (size_t) atoi(argv[2]);
+        NK = (size_t) atoi(argv[3]);
     } else {
         usage_flag = 1;
         NI = DEFAULT_GRID_SIZE;
@@ -121,9 +121,10 @@ int main(int argc, char *argv[]){
     }
 
     if(argc > 4){
-        BSIZE_I = atoi(argv[4]);
-        BSIZE_J = atoi(argv[5]);
-        BSIZE_K = atoi(argv[6]);
+        /* This is only a test program, ignore safe handling of inputs */
+        BSIZE_I = (size_t) atoi(argv[4]);
+        BSIZE_J = (size_t) atoi(argv[5]);
+        BSIZE_K = (size_t) atoi(argv[6]);
     } else {
         OpenST_FSM3D_SuggestBlockSize(NI,NJ,NK,&BSIZE_I,&BSIZE_J,&BSIZE_K);
     }

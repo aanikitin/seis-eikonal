@@ -40,50 +40,50 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
             (CURI > ((double)(NI - 1) * HI)) ||
 			(CURJ > ((double)(NJ - 1) * HJ)) ||
             (CURK > ((double)(NK - 1) * HK)) ){
-        errcode = OPENST_ERR_ALG_DOMAIN;
+        errcode = OPENST_ERR_ALG_OUT_OF_BOUNDS;
         goto EXIT;
     }
 
     OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK,&TC);
 
     TILa = &TIL;
-    if(CURI >= HI/2.0){
-        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI - HI/2.0,CURJ,CURK,TILa);
+    if(CURI >= HI){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI - HI,CURJ,CURK,TILa);
     } else {
         TILa = NULL;
     }
 
     TIRa = &TIR;
-    if( (CURI + HI/2.0) <= ((double)(NI - 1) * HI) ){
-        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI + HI/2.0,CURJ,CURK,TIRa);
+    if( (CURI + HI) <= ((double)(NI - 1) * HI) ){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI + HI,CURJ,CURK,TIRa);
     } else {
         TIRa = NULL;
     }
 
     TJLa = &TJL;
-    if(CURJ >= HJ/2.0){
-        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ - HJ/2.0,CURK,TJLa);
+    if(CURJ >= HJ){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ - HJ,CURK,TJLa);
     } else {
         TJLa = NULL;
     }
 
     TJRa = &TJR;
-    if( (CURJ + HJ / 2.0) <= ((double)(NJ - 1) * HJ) ){
-        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ + HJ/2.0,CURK,TJRa);
+    if( (CURJ + HJ) <= ((double)(NJ - 1) * HJ) ){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ + HJ,CURK,TJRa);
     } else {
         TJRa = NULL;
     }
 
     TKLa = &TKL;
-    if(CURK >= HK/2.0){
-        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK - HK/2.0,TKLa);
+    if(CURK >= HK){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK - HK,TKLa);
     } else {
         TKLa = NULL;
     }
 
     TKRa = &TKR;
-    if( (CURK + HK / 2.0) <= ((double)(NK - 1) * HK) ){
-        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK + HK/2.0,TKRa);
+    if( (CURK + HK) <= ((double)(NK - 1) * HK) ){
+        OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK + HK,TKRa);
     } else {
         TKRa = NULL;
     }
@@ -127,7 +127,7 @@ OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
     size_t MAX_SEG,
     double **RAY, size_t *RAY_NI, size_t *RAY_NJ) {
 
-    OPENST_ERR errcode = OPENST_ERR_ALG_EARLY_TERM;
+    OPENST_ERR errcode = OPENST_ERR_ALG_TERMINATED;
     double CUR[3];
     double DST[3];
     double SRCI_L, SRCI_H, SRCJ_L, SRCJ_H, SRCK_L, SRCK_H;

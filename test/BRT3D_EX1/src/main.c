@@ -62,9 +62,10 @@ int main(int argc, char *argv[]){
 
     if(argc > 1){
         usage_flag = 0;
-        NI = atoi(argv[1]);
-        NJ = atoi(argv[2]);
-        NK = atoi(argv[3]);
+        /* This is only a test program, ignore safe handling of inputs */
+        NI = (size_t) atoi(argv[1]);
+        NJ = (size_t) atoi(argv[2]);
+        NK = (size_t) atoi(argv[3]);
     } else {
         usage_flag = 1;
         NI = DEFAULT_GRID_SIZE;
