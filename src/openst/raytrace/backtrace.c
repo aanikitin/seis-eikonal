@@ -1,5 +1,6 @@
-//TODO: recheck and cleanup
-//TODO: improve accuracy
+//TODO: integrate by ds
+//TODO: improve accuracy (Runge-Kutta 4th order, improve eikonal accuracy)
+//TODO: improve handling of near source termination
 #include "openst/raytrace/backtrace.h"
 
 #define TSTEP_DEFAULT_MULT 0.999
@@ -93,9 +94,9 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
 #endif
 
     if (grad_length > 0) {
-        vali = CURI - gradi / grad_length * TSTEP * vel;
-        valj = CURJ - gradj / grad_length * TSTEP * vel;
-        valk = CURK - gradk / grad_length * TSTEP * vel;
+        vali = CURI - gradi / grad_length * vel * vel * TSTEP;
+        valj = CURJ - gradj / grad_length * vel * vel * TSTEP;
+        valk = CURK - gradk / grad_length * vel * vel * TSTEP;
     }
     else {
         errcode = OPENST_ERR_DIV_BY_ZERO;

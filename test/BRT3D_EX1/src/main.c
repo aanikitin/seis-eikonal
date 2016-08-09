@@ -87,8 +87,8 @@ int main(int argc, char *argv[]){
         RCVK = atof(argv[6]);
     } else {
         RCVI = DEFAULT_RCV;
-        RCVJ = DEFAULT_RCV;
-        RCVK = DEFAULT_RCV;
+        RCVJ = DEFAULT_SRC;
+        RCVK = DEFAULT_SRC;
     }
 
     SRCI = DEFAULT_SRC;
