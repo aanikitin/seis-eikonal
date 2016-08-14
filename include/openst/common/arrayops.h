@@ -9,6 +9,7 @@ extern "C" {
 #include <stddef.h>
 #include <math.h>
 
+#include "openst/common/hacks.h"
 #include "openst/common/macros.h"
 
 OPENST_API void OpenST_AOP_GetArrStats(double *A, size_t numel, double *min,

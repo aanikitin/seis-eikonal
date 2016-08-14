@@ -1,5 +1,10 @@
 set(EIKONAL_EX1_SRC src/main.c)
 add_executable(EIKONAL_EX1 ${EIKONAL_EX1_SRC})
-target_link_libraries(EIKONAL_EX1 OPENST_STATIC)
+if(WIN32)
+    target_link_libraries(EIKONAL_EX1 OPENST_SHARED)
+	target_compile_definitions(EIKONAL_EX1 PRIVATE -DOPENST_LINK_SHARED)
+else()
+    target_link_libraries(EIKONAL_EX1 OPENST_STATIC)
+endif()
 
 add_test(NAME EIKONAL_EX1 COMMAND $<TARGET_FILE:EIKONAL_EX1>)

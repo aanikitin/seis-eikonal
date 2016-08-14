@@ -11,6 +11,7 @@ extern "C" {
 #include <math.h>
 #include <float.h>
 
+#include "openst/common/hacks.h"
 #include "openst/common/memadr.h"
 #include "openst/common/macros.h"
 #include "openst/common/error.h"

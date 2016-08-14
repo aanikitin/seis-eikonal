@@ -8,6 +8,7 @@ extern "C" {
 #include <stddef.h>
 #include <math.h>
 
+#include "openst/common/hacks.h"
 #include "openst/common/memadr.h"
 #include "openst/common/dynarr.h"
 #include "openst/common/coordsys.h"

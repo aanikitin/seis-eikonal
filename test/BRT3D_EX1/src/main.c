@@ -104,7 +104,13 @@ int main(int argc, char *argv[]){
 
     BRT3D_TSTEP = OpenST_BRT3D_SuggestTSTEP(1.0, HI, HJ, HK);
     MAX_SEG = (NI * NJ * NK);
-    printf("TSTEP:\t\t%e\nMAX_SEG:\t%zu\n",BRT3D_TSTEP,MAX_SEG);
+
+#ifdef _MSC_VER
+    printf("TSTEP:\t\t%e\nMAX_SEG:\t%Iu\n",
+#else
+    printf("TSTEP:\t\t%e\nMAX_SEG:\t%zu\n",
+#endif
+		BRT3D_TSTEP,MAX_SEG);
 
     t1 = omp_get_wtime();
     errcode = OpenST_BRT3D_Trace(U, V, NI, NJ, NK, HI, HJ, HK, BRT3D_TSTEP,
@@ -119,23 +125,35 @@ int main(int argc, char *argv[]){
     }
 
     printf("BRT3D time:\t%e sec\n", t2 - t1);
-    printf("RAY:\t\t%zu line segments\n",RAY_NI);
+
+#ifdef _MSC_VER
+    printf("RAY:\t\t%Iu line segments\n",
+#else
+    printf("RAY:\t\t%zu line segments\n",
+#endif
+    RAY_NI);
+
     printf("RCV:\t\t{%e; %e; %e}\n", RCVI, RCVJ, RCVK);
     printf("RAY[start]:\t{%e; %e; %e}\n",
            RAY[OPENST_MEMADR_2D(0,0,RAY_NI,RAY_NJ)],
             RAY[OPENST_MEMADR_2D(0,1,RAY_NI,RAY_NJ)],
             RAY[OPENST_MEMADR_2D(0,2,RAY_NI,RAY_NJ)]);
-    printf("RAY[end]:\t{%e; %e; %e}\n",
+    printf("RAY[end]:\t\t{%e; %e; %e}\n",
            RAY[OPENST_MEMADR_2D(RAY_NI - 1,0,RAY_NI,RAY_NJ)],
             RAY[OPENST_MEMADR_2D(RAY_NI - 1,1,RAY_NI,RAY_NJ)],
             RAY[OPENST_MEMADR_2D(RAY_NI - 1,2,RAY_NI,RAY_NJ)]);
     printf("SRC:\t\t{%e; %e; %e}\n", SRCI, SRCJ, SRCK);
 
     for(i = 0; i < RAY_NI; ++i){
-        printf("%zu %e %e %e\n",i,
+#ifdef _MSC_VER
+        printf("%Iu %e %e %e\n",
+#else
+        printf("%zu %e %e %e\n",
+#endif
+               i,
                RAY[OPENST_MEMADR_2D(i,0,RAY_NI,RAY_NJ)],
-                RAY[OPENST_MEMADR_2D(i,1,RAY_NI,RAY_NJ)],
-                RAY[OPENST_MEMADR_2D(i,2,RAY_NI,RAY_NJ)]);
+               RAY[OPENST_MEMADR_2D(i,1,RAY_NI,RAY_NJ)],
+               RAY[OPENST_MEMADR_2D(i,2,RAY_NI,RAY_NJ)]);
     }
 
 EXIT:

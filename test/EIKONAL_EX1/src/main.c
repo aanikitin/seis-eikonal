@@ -11,7 +11,7 @@
 
 #define DEFAULT_DOMAIN_SIZE 1.0
 #define DEFAULT_SRC 0.5
-#define DEFAULT_GRID_SIZE 100u
+#define DEFAULT_GRID_SIZE 50u
 #define DEFAULT_MAX_ITER 10
 #define DEFAULT_EPS_MULT 0.01
 
@@ -143,11 +143,11 @@ int main(int argc, char *argv[]){
 
     app_info(argv[0],usage_flag);
 
-    U = malloc(NI * NJ * NK * sizeof(double));
+    U = (double *)malloc(NI * NJ * NK * sizeof(double));
     assert(U);
-    V = malloc(NI * NJ * NK * sizeof(double));
+    V = (double *)malloc(NI * NJ * NK * sizeof(double));
     assert(V);
-    LSM_UNLOCKED = malloc(NI * NJ * NK * sizeof(char));
+    LSM_UNLOCKED = (char *)malloc(NI * NJ * NK * sizeof(char));
     assert(LSM_UNLOCKED);
 
     SRCI = DEFAULT_SRC;
@@ -176,19 +176,19 @@ int main(int argc, char *argv[]){
 #ifndef TEST_FSM
     IMP_NAME = OPENST_LSM3D_IMP_NAME;
     OpenST_LSM3D_Init_2(U,LSM_UNLOCKED,V,
-                      NI,NJ,NK,
-                      HI,HJ,HK,
-                      SRCI,SRCJ,SRCK,
-                      &SRCidx,&SRCidx_NI,&SRCidx_NJ,
-                      OPENST_FSM3D_INIT_DEFAULT);
+                        NI,NJ,NK,
+                        HI,HJ,HK,
+                        SRCI,SRCJ,SRCK,
+                        &SRCidx,&SRCidx_NI,&SRCidx_NJ,
+                        OPENST_FSM3D_INIT_DEFAULT);
 #else
     IMP_NAME = OPENST_FSM3D_IMP_NAME;
     OpenST_FSM3D_Init_2(U,V,
-                      NI,NJ,NK,
-                      HI,HJ,HK,
-                      SRCI,SRCJ,SRCK,
-                      &SRCidx,&SRCidx_NI,&SRCidx_NJ,
-                      OPENST_FSM3D_INIT_DEFAULT);
+                        NI,NJ,NK,
+                        HI,HJ,HK,
+                        SRCI,SRCJ,SRCK,
+                        &SRCidx,&SRCidx_NI,&SRCidx_NJ,
+                        OPENST_FSM3D_INIT_DEFAULT);
 #endif
     t2 = omp_get_wtime();
     printf("Initialization time: %e sec\n", t2 - t1);
@@ -233,10 +233,10 @@ int main(int argc, char *argv[]){
 #ifdef _MSC_VER
     printf("%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e,%e,%e,%e,%e,%e,%e," \
            "%Iu,%Iu,%Iu,%e,%e,%e,%s\n",
-       #else
+#else
     printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e,%e,%e,%e,%e,%e,%e," \
            "%zu,%zu,%zu,%e,%e,%e,%s\n",
-       #endif
+#endif
            TEST_ID,IMP_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
            EPS,max_iter,it,converged,EIK3D_Time,L1,L2,Linf,Umin,Umean,Umax,
            NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE_STATIC
