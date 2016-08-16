@@ -94,9 +94,9 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
 #endif
 
     if (grad_length > 0) {
-        vali = CURI - gradi / grad_length * vel * vel * TSTEP;
-        valj = CURJ - gradj / grad_length * vel * vel * TSTEP;
-        valk = CURK - gradk / grad_length * vel * vel * TSTEP;
+        vali = CURI - gradi / grad_length * vel * TSTEP;
+        valj = CURJ - gradj / grad_length * vel * TSTEP;
+        valk = CURK - gradk / grad_length * vel * TSTEP;
     }
     else {
         errcode = OPENST_ERR_DIV_BY_ZERO;

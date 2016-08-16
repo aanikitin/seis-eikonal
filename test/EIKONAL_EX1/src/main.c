@@ -14,6 +14,7 @@
 #define DEFAULT_GRID_SIZE 50u
 #define DEFAULT_MAX_ITER 10
 #define DEFAULT_EPS_MULT 0.01
+#define DEFAULT_V 1.0
 
 
 void ex_init(double *V, size_t NI, size_t NJ, size_t NK){
@@ -21,7 +22,7 @@ void ex_init(double *V, size_t NI, size_t NJ, size_t NK){
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
             for(k = 0; k < NK; ++k){
-                V[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = 1.0;
+                V[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = DEFAULT_V;
             }
         }
     }
@@ -56,7 +57,7 @@ void ex_check(double *U,
                 dj = SRCJ - (double)j * HJ;
                 dk = SRCK - (double)k * HK;
                 dist = sqrt(di * di + dj * dj + dk * dk);
-                diff = uval - dist;
+                diff = uval - dist / DEFAULT_V;
                 l1 += fabs(diff);
                 l2 += (diff * diff);
                 linf = fmax(linf,fabs(diff));
@@ -157,6 +158,7 @@ int main(int argc, char *argv[]){
     HJ = DEFAULT_DOMAIN_SIZE / (double)(NJ - 1);
     HK = DEFAULT_DOMAIN_SIZE / (double)(NK - 1);
 
+    printf("V = %e\n",DEFAULT_V);
     printf("HI = %e; HJ = %e; HK = %e\n",HI,HJ,HK);
 
     OMP_MAX_THREADS = omp_get_max_threads();

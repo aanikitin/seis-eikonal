@@ -51,7 +51,7 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Point(double *U, double *V,
     dist = OpenST_CRS_Distance3D(SRCI, SRCJ, SRCK, ic, jc, kc);
 
     U[OPENST_MEMADR_3D(ii, ji, ki, NI, NJ, NK)] =
-            dist * V[OPENST_MEMADR_3D(ii, ji, ki, NI, NJ, NK)];
+            dist / V[OPENST_MEMADR_3D(ii, ji, ki, NI, NJ, NK)];
 
     if(output_srcidx){
         SRCidx_loc[0] = ii;
@@ -148,7 +148,7 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
                                                  ic[i], jc[j], kc[k]);
 
                     U[OPENST_MEMADR_3D(ii[i], ji[j], ki[k], NI, NJ, NK)] =
-                            dist * SRCV;
+                            dist / SRCV;
 
                     if(output_srcidx){
                         SRCidx_loc[OPENST_MEMADR_2D(SRCidx_ind,0,SRCidx_NI_loc,
