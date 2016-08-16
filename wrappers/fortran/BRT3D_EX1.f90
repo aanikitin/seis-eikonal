@@ -81,5 +81,7 @@
     do i = 1,RAY_NI
         print '(I3, E15.6, E15.6, E15.6)', i, RAY(i,1), RAY(i,2), RAY(i,3)
     end do
+    
+    CALL OpenST_INTEROP_FreePointer(RAY_PTR)
 
     end program

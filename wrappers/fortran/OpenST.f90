@@ -59,7 +59,16 @@
     TYPE (C_PTR), VALUE :: RAY_NJ
     END FUNCTION OpenST_BRT3D_Trace
     END INTERFACE
-
+    
+    INTERFACE
+    SUBROUTINE OpenST_INTEROP_FreePointer(PTR) &
+        BIND(C, NAME='OpenST_INTEROP_FreePointer')
+    use, intrinsic :: iso_c_binding
+    IMPLICIT NONE
+    TYPE (C_PTR), VALUE :: PTR
+    END SUBROUTINE OpenST_INTEROP_FreePointer
+    END INTERFACE
+    
     CONTAINS
 
     SUBROUTINE OpenST_Fortran_PrintArr(MAT)
