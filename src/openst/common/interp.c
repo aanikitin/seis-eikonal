@@ -1,6 +1,17 @@
 #include "openst/common/interp.h"
 
 
+void OpenST_INTERP_3D(double *A, size_t NI, size_t NJ, size_t NK,
+                             double HI, double HJ, double HK,
+                             double PI, double PJ, double PK,
+                             double *VAL){
+    OpenST_INTERP_Trilinear(A, NI, NJ, NK,
+                            HI, HJ, HK,
+                            PI, PJ, PK,
+                            VAL);
+}
+
+
 void OpenST_INTERP_Trilinear(double *A, size_t NI, size_t NJ, size_t NK,
                              double HI, double HJ, double HK,
                              double PI, double PJ, double PK,

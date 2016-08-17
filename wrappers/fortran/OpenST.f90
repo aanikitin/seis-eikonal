@@ -68,6 +68,26 @@
     TYPE (C_PTR), VALUE :: PTR
     END SUBROUTINE OpenST_INTEROP_FreePointer
     END INTERFACE
+            
+    INTERFACE
+    SUBROUTINE OpenST_INTERP_3D(A,NI,NJ,NK, &
+        HI,HJ,HK,PI,PJ,PK,VAL) &
+        BIND(C, NAME='OpenST_INTERP_3D')
+    use, intrinsic :: iso_c_binding
+    IMPLICIT NONE
+    TYPE (C_PTR), VALUE :: A
+    INTEGER (C_SIZE_T), VALUE :: NI
+    INTEGER (C_SIZE_T), VALUE :: NJ
+    INTEGER (C_SIZE_T), VALUE :: NK
+    REAL (C_DOUBLE), VALUE :: HI
+    REAL (C_DOUBLE), VALUE :: HJ
+    REAL (C_DOUBLE), VALUE :: HK
+    REAL (C_DOUBLE), VALUE :: PI
+    REAL (C_DOUBLE), VALUE :: PJ
+    REAL (C_DOUBLE), VALUE :: PK
+    TYPE (C_PTR), VALUE :: VAL
+    END SUBROUTINE OpenST_INTERP_3D
+    END INTERFACE
     
     CONTAINS
 
