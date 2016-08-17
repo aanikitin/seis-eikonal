@@ -174,7 +174,9 @@ OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
         if ((errcode = OpenST_BRT3D_Step(T, V, NI, NJ, NK, HI, HJ, HK, TSTEP,
             CUR[0], CUR[1], CUR[2],
             &DST[0], &DST[1], &DST[2]))) {
-            goto EXIT;
+            if(errcode){
+                goto FINISH;
+            }
         }
 
         CUR[0] = DST[0];
@@ -182,6 +184,7 @@ OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
         CUR[2] = DST[2];
     }
 
+FINISH:
     if (OpenST_DYNARR_Shrink(arrptr) == NULL) {
         errcode = OPENST_ERR_MEMORY_ALLOC;
         goto EXIT;
