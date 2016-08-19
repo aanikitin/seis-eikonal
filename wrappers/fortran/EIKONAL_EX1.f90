@@ -62,7 +62,7 @@
     end if
 
     start = omp_get_wtime()
-    U = RESHAPE( U, [NI,NJ,NK], order=[1,2,3])
+    U = RESHAPE( U, [NI,NJ,NK], order=[3,2,1])
     finish = omp_get_wtime()
     print '("RESHAPE C OUTPUT: ",f12.6," seconds.")',finish-start
 

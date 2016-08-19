@@ -26,7 +26,7 @@ OPENST_API OPENST_ERR OpenST_CRS_Cart2IndRound(double coord,
 OPENST_API OPENST_ERR OpenST_CRS_Cart2Ind(double coord,
                                           double cell_size, size_t *ind);
 
-OPENST_API int OpenST_CRS_IsPointWithinBounds(double PI, double PJ, double PK,
+OPENST_API int OpenST_CRS_IsPointNotWithinBounds(double PI, double PJ, double PK,
                                        size_t NI, size_t NJ, size_t NK,
                                        double HI, double HJ, double HK);
 

@@ -6,82 +6,29 @@
 #include <float.h>
 
 #include "openst.h"
+#include "fio_hdf5.h"
 
-#define TEST_ID "EIKONAL_EX1"
+#define TEST_ID "EIKONAL_HDF5"
 
-#define DEFAULT_DOMAIN_SIZE 1.0
 #define DEFAULT_SRC 0.5
-#define DEFAULT_GRID_SIZE 50u
-#define DEFAULT_MAX_ITER 10
+#define DEFAULT_MAX_ITER 1000
 #define DEFAULT_EPS_MULT 0.01
-#define DEFAULT_V 1.0
-
-
-void ex_init(double *V, size_t NI, size_t NJ, size_t NK){
-    size_t i, j, k;
-    for(i = 0; i < NI; ++i){
-        for(j = 0; j < NJ; ++j){
-            for(k = 0; k < NK; ++k){
-                V[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = DEFAULT_V;
-            }
-        }
-    }
-}
-
-
-void ex_check(double *U,
-              size_t NI, size_t NJ, size_t NK,
-              double HI, double HJ, double HK,
-              double SRCI, double SRCJ, double SRCK,
-              double *L1, double *L2, double *Linf,
-              double *Umin, double *Umax, double *Umean){
-
-    size_t i, j, k, NN;
-    double uval, umin, umax, umean;
-    double di, dj, dk, dist, diff, l1, l2, linf;
-    l1 = 0.0;
-    l2 = 0.0;
-    linf = -INFINITY;
-    umin = INFINITY;
-    umax = -INFINITY;
-    umean = 0.0;
-    NN = NI * NJ * NK;
-    for(i = 0; i < NI; ++i){
-        for(j = 0; j < NJ; ++j){
-            for(k = 0; k < NK; ++k){
-                uval = U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)];
-                umin = fmin(umin,uval);
-                umax = fmax(umax,uval);
-                umean += uval;
-                di = SRCI - (double)i * HI;
-                dj = SRCJ - (double)j * HJ;
-                dk = SRCK - (double)k * HK;
-                dist = sqrt(di * di + dj * dj + dk * dk);
-                diff = uval - dist / DEFAULT_V;
-                l1 += fabs(diff);
-                l2 += (diff * diff);
-                linf = fmax(linf,fabs(diff));
-            }
-        }
-    }
-    *L1 = l1/(double)NN;
-    *L2 = l2/(double)NN;
-    *Linf = linf;
-    *Umin = umin;
-    *Umax = umax;
-    *Umean = umean/(double)NN;
-}
+#define DEFAULT_V_DATASET_NAME "V"
 
 
 void app_info(char *BIN_NAME,int usage){
     printf("TEST_ID: %s\n",TEST_ID);
     if(usage){
-        printf("Usage: %s [NI NJ NK] [BSIZE_I BSIZE_J BSIZE_K] [EPS_MULT] [MAX_ITER]\n" \
-               "\t[NI NJ NK] - grid size\n" \
-               "\t[BSIZE_I x BSIZE_J x BSIZE_K] - task size\n" \
+        printf("Usage: %s FILE_IN FILE_OUT SRCI SRCJ SRCK [DATASET] [EPS_MULT] [MAX_ITER] [BSIZE_I BSIZE_J BSIZE_K]\n" \
+               "\tFILE_IN - HDF5 input file with datasets:\n" \
+               "\t\t\"V\" or \"[DATASET]\" - array representing 3D regular velocity grid stored in row major format\n" \
+               "\t\t\"HI\", \"HJ\", \"HK\" - grid steps in each dimension\n" \
+               "\tFILE_OUT - HDF5 output file for eikonal's solution\n" \
+               "\tSRCI SRCJ SRCK - source coordinates, with (0,0,0) corresponding to the first (i,j,k) element of velocity array\n" \
+               "\t[DATASET] - velocity grid dataset name, defaults to \"V\"\n" \
                "\t[EPS_MULT] - EPS convergence parameter multiplier\n" \
-               "\t[MAX_ITER] - maximum number of iterations\n"
-               "Running using default values...\n\n",BIN_NAME);
+               "\t[MAX_ITER] - maximum number of iterations\n" \
+               "\t[BSIZE_I x BSIZE_J x BSIZE_K] - task size\n\n",BIN_NAME);
     }
 
     printf("%s\n",OPENST_VERSION_STR_FULL_STATIC);
@@ -92,11 +39,11 @@ void app_info(char *BIN_NAME,int usage){
 int main(int argc, char *argv[]){
 
     OPENST_ERR errcode;
-    double *U, *V, HI, HJ, HK;
+    char *FILE_IN, *FILE_OUT, *V_DATASET_NAME;
+    double *U, *V, vmin, vmean,vmax, HI, HJ, HK;
     int max_iter;
     int it, converged;
     double t1,t2;
-    double L1, L2, Linf, Umin, Umax, Umean;
     size_t NI, NJ, NK;
     double SRCI, SRCJ, SRCK;
     size_t BSIZE_I;
@@ -104,32 +51,33 @@ int main(int argc, char *argv[]){
     size_t BSIZE_K;
     char *LSM_UNLOCKED;
     int OMP_MAX_THREADS;
-    double vmin, vmax, vmean;
-    double EPS, EPS_MULT, EIK3D_Time, BRT3D_TSTEP;
+    double EPS, EPS_MULT, EIK3D_Time;
     const char *IMP_NAME;
-    int usage_flag;
     size_t SRCidx_i, i, j, k;
     size_t *SRCidx, SRCidx_NI, SRCidx_NJ;
 
-    if(argc > 1){
-        usage_flag = 0;
-        NI = (size_t) atoi(argv[1]);
-        NJ = (size_t) atoi(argv[2]);
-        NK = (size_t) atoi(argv[3]);
-    } else {
-        usage_flag = 1;
-        NI = DEFAULT_GRID_SIZE;
-        NJ = DEFAULT_GRID_SIZE;
-        NK = DEFAULT_GRID_SIZE;
+    if(argc < 6){
+        fprintf(stderr,"Error: invalid command line parameters\n");
+        app_info(argv[0],1);
+        errcode = OPENST_ERR_PARAM_INVALID;
+        goto EXIT;
     }
 
-    if(argc > 4){
-        /* This is only a test program, ignore safe handling of inputs */
-        BSIZE_I = (size_t) atoi(argv[4]);
-        BSIZE_J = (size_t) atoi(argv[5]);
-        BSIZE_K = (size_t) atoi(argv[6]);
+    app_info(argv[0],0);
+
+    FILE_IN = argv[1];
+    FILE_OUT = argv[2];
+
+    SRCI = atof(argv[3]);
+    SRCJ = atof(argv[4]);
+    SRCK = atof(argv[5]);
+
+    printf("SRCI = %e; SRCJ = %e; SRCK = %e\n",SRCI,SRCJ,SRCK);
+
+    if(argc > 6){
+        V_DATASET_NAME = argv[6];
     } else {
-        OpenST_FSM3D_SuggestBlockSize(NI,NJ,NK,&BSIZE_I,&BSIZE_J,&BSIZE_K);
+        V_DATASET_NAME = DEFAULT_V_DATASET_NAME;
     }
 
     if(argc > 7){
@@ -144,34 +92,44 @@ int main(int argc, char *argv[]){
         max_iter = DEFAULT_MAX_ITER;
     }
 
-    app_info(argv[0],usage_flag);
+    hdf5_read_model(FILE_IN,V_DATASET_NAME,&V,&HI,&HJ,&HK,&NI,&NJ,&NK);
+
+#ifdef _MSC_VER
+    printf("NI = %Iu; NJ = %Iu; NK = %Iu\n",NI,NJ,HK);
+#else
+    printf("NI = %zu; NJ = %zu; NK = %zu\n",NI,NJ,NK);
+#endif
+    printf("HI = %e; HJ = %e; HK = %e\n",HI,HJ,HK);
+    printf("V[0,0,0]: %e\n",V[OPENST_MEMADR_3D(0,0,0,NI,NJ,NK)]);
+    printf("V[0,0,1]: %e\n",V[OPENST_MEMADR_3D(0,0,1,NI,NJ,NK)]);
+    printf("V[0,1,0]: %e\n",V[OPENST_MEMADR_3D(0,1,0,NI,NJ,NK)]);
+    printf("V[1,0,0]: %e\n",V[OPENST_MEMADR_3D(1,0,0,NI,NJ,NK)]);
+
+    if(OpenST_CRS_IsPointNotWithinBounds(SRCI,SRCJ,SRCK,NI,NJ,NK,HI,HJ,HK)){
+        fprintf(stderr,"Error: SRC is not within domain bounds\n");
+        errcode = OPENST_ERR_PARAM_INVALID;
+        goto EXIT;
+    }
+
+    if(argc > 9){
+        BSIZE_I = (size_t) atoi(argv[9]);
+        BSIZE_J = (size_t) atoi(argv[10]);
+        BSIZE_K = (size_t) atoi(argv[11]);
+    } else {
+        OpenST_FSM3D_SuggestBlockSize(NI,NJ,NK,&BSIZE_I,&BSIZE_J,&BSIZE_K);
+    }
 
     U = (double *)malloc(NI * NJ * NK * sizeof(double));
     assert(U);
-    V = (double *)malloc(NI * NJ * NK * sizeof(double));
-    assert(V);
     LSM_UNLOCKED = (char *)malloc(NI * NJ * NK * sizeof(char));
     assert(LSM_UNLOCKED);
 
-    SRCI = DEFAULT_SRC;
-    SRCJ = DEFAULT_SRC;
-    SRCK = DEFAULT_SRC;
-    HI = DEFAULT_DOMAIN_SIZE / (double)(NI - 1);
-    HJ = DEFAULT_DOMAIN_SIZE / (double)(NJ - 1);
-    HK = DEFAULT_DOMAIN_SIZE / (double)(NK - 1);
-
-    printf("V = %e\n",DEFAULT_V);
-    printf("HI = %e; HJ = %e; HK = %e\n",HI,HJ,HK);
-
     OMP_MAX_THREADS = omp_get_max_threads();
-
-    ex_init(V, NI, NJ, NK);
 
     if(EPS_MULT != 0.0){
         OpenST_AOP_GetArrStats(V, NI * NJ * NK, &vmin, &vmax, &vmean);
         printf("Vmin = %e; Vmean = %e; Vmax = %e\n",vmin,vmean,vmax);
-        BRT3D_TSTEP = OpenST_BRT3D_SuggestTSTEP(vmax, HI, HJ, HK);
-        EPS = BRT3D_TSTEP * EPS_MULT;
+        EPS = EPS_MULT * OpenST_BRT3D_SuggestTSTEP(vmax, HI, HJ, HK);
     } else {
         EPS = 0.0;
     }
@@ -231,31 +189,25 @@ int main(int argc, char *argv[]){
     t2 = omp_get_wtime();
     EIK3D_Time = t2 - t1;
 
-    ex_check(U, NI, NJ, NK, HI, HJ, HK,
-             SRCI, SRCJ, SRCK, &L1, &L2, &Linf, &Umin, &Umax, &Umean);
+    hdf5_write_time(FILE_OUT,"T",U,&HI,&HJ,&HK,NI,NJ,NK);
 
     printf("\n====================================================\n");
     printf("TEST_ID,METHOD_ID,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K," \
-           "EPS,max_iter,it,converged,sec,L1(MAE),L2(MSE),L_inf," \
-           "Umin,Umean,Umax," \
+           "EPS,max_iter,it,converged,sec," \
            "NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE\n");
 
 #ifdef _MSC_VER
-    printf("%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e,%e,%e,%e,%e,%e,%e," \
+    printf("%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e," \
            "%Iu,%Iu,%Iu,%e,%e,%e,%s\n",
 #else
-    printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e,%e,%e,%e,%e,%e,%e," \
+    printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e," \
            "%zu,%zu,%zu,%e,%e,%e,%s\n",
 #endif
            TEST_ID,IMP_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
-           EPS,max_iter,it,converged,EIK3D_Time,L1,L2,Linf,Umin,Umean,Umax,
+           EPS,max_iter,it,converged,EIK3D_Time,
            NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE_STATIC
            );
 
 EXIT:
-    if(converged && (it == 9) && (errcode == OPENST_ERR_SUCCESS)){
-        return EXIT_SUCCESS;
-    } else {
-        return EXIT_FAILURE;
-    }
+    return errcode;
 }

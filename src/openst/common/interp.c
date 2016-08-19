@@ -1,14 +1,27 @@
 #include "openst/common/interp.h"
 
 
-void OpenST_INTERP_3D(double *A, size_t NI, size_t NJ, size_t NK,
+OPENST_ERR OpenST_INTERP_3D(double *A, size_t NI, size_t NJ, size_t NK,
                              double HI, double HJ, double HK,
                              double PI, double PJ, double PK,
                              double *VAL){
+
+    OPENST_ERR errcode = OPENST_ERR_SUCCESS;
+
+    if ( OpenST_CRS_IsPointNotWithinBounds(PI, PJ, PK,
+                                        NI, NJ, NK,
+                                        HI, HJ, HK) ) {
+        errcode = OPENST_ERR_PARAM_INVALID;
+        goto EXIT;
+    }
+
     OpenST_INTERP_Trilinear(A, NI, NJ, NK,
                             HI, HJ, HK,
                             PI, PJ, PK,
                             VAL);
+
+EXIT:
+    return errcode;
 }
 
 

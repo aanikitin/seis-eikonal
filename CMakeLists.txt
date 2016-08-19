@@ -3,6 +3,7 @@
 project(OpenST)
 cmake_minimum_required(VERSION 3.0)
 # set(CMAKE_VERBOSE_MAKEFILE OFF)
+message(STATUS "CMAKE_VERSION: ${CMAKE_VERSION}")
 
 # OpenST uses C99 standard extensively
 macro(use_c99)

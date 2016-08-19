@@ -36,7 +36,7 @@ OPENST_ERR OpenST_CRS_Cart2Ind(double coord, double cell_size, size_t *ind)
 
 
 //TODO: change to stored domain bounds in the future release
-int OpenST_CRS_IsPointWithinBounds(double PI, double PJ, double PK,
+int OpenST_CRS_IsPointNotWithinBounds(double PI, double PJ, double PK,
                                        size_t NI, size_t NJ, size_t NK,
                                        double HI, double HJ, double HK){
     int il, ih, jl, jh, kl, kh;

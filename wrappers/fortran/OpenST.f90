@@ -70,7 +70,7 @@
     END INTERFACE
             
     INTERFACE
-    SUBROUTINE OpenST_INTERP_3D(A,NI,NJ,NK, &
+    INTEGER(C_INT) FUNCTION OpenST_INTERP_3D(A,NI,NJ,NK, &
         HI,HJ,HK,PI,PJ,PK,VAL) &
         BIND(C, NAME='OpenST_INTERP_3D')
     use, intrinsic :: iso_c_binding
@@ -86,7 +86,7 @@
     REAL (C_DOUBLE), VALUE :: PJ
     REAL (C_DOUBLE), VALUE :: PK
     TYPE (C_PTR), VALUE :: VAL
-    END SUBROUTINE OpenST_INTERP_3D
+    END FUNCTION OpenST_INTERP_3D
     END INTERFACE
     
     CONTAINS

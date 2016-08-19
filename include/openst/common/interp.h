@@ -14,13 +14,14 @@ extern "C" {
 #include "openst/common/memadr.h"
 #include "openst/common/error.h"
 #include "openst/common/float.h"
+#include "openst/common/coordsys.h"
 
 typedef enum OPENST_INTERP_METHOD_enum{
     OPENST_INTERP_LINEAR,
     OPENST_INTERP_DEFAULT = OPENST_INTERP_LINEAR
 } OPENST_INTERP_METHOD;
 
-OPENST_API void OpenST_INTERP_3D(double *A,
+OPENST_API OPENST_ERR OpenST_INTERP_3D(double *A,
                               size_t NI, size_t NJ, size_t NK,
                               double HI, double HJ, double HK,
                               double PI, double PJ, double PK,
