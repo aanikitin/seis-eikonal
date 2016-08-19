@@ -95,7 +95,7 @@ int main(int argc, char *argv[]){
     hdf5_read_model(FILE_IN,V_DATASET_NAME,&V,&HI,&HJ,&HK,&NI,&NJ,&NK);
 
 #ifdef _MSC_VER
-    printf("NI = %Iu; NJ = %Iu; NK = %Iu\n",NI,NJ,HK);
+    printf("NI = %Iu; NJ = %Iu; NK = %Iu\n",NI,NJ,NK);
 #else
     printf("NI = %zu; NJ = %zu; NK = %zu\n",NI,NJ,NK);
 #endif
@@ -203,7 +203,7 @@ int main(int argc, char *argv[]){
     printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e," \
            "%zu,%zu,%zu,%e,%e,%e,%s\n",
 #endif
-           TEST_ID,IMP_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
+           FILE_IN,IMP_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
            EPS,max_iter,it,converged,EIK3D_Time,
            NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE_STATIC
            );
