@@ -102,7 +102,7 @@ include_directories(BEFORE include)
 
 # 'evil' globbing. remember to rerun cmake when changing project structure.
 aux_source_directory(src SRC_LIST)
-file(GLOB_RECURSE SRC_LIST RELATIVE "${PROJECT_SOURCE_DIR}" "src/*.c")
+file(GLOB_RECURSE SRC_LIST RELATIVE "${PROJECT_SOURCE_DIR}" "src/*.c" "include/*.h")
 # message(STATUS "SRC_LIST: ${SRC_LIST}")
 
 # ==============================
@@ -192,5 +192,5 @@ add_subdirectory(test build/test)
 # ==== MISC ====
 # workaround for Qt Creator project tree not showing includes etc.
 # doesn't affect build process
-file(GLOB_RECURSE DUMMY_HEADERS "${PROJECT_SOURCE_DIR}" *.h *.c)
-add_custom_target(dummy ALL SOURCES ${DUMMY_HEADERS})
+#file(GLOB_RECURSE DUMMY_HEADERS "${PROJECT_SOURCE_DIR}" *.h *.c)
+#add_custom_target(dummy ALL SOURCES ${DUMMY_HEADERS})

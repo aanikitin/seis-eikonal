@@ -1,0 +1,15 @@
+# Ignore everything
+*
+# but not subdirs
+!*/
+# and files such as
+!.gitignore
+!LICENSE
+!README.md
+!CMakeLists.txt
+!*.c
+!*.h
+!*.sh
+!*.f90
+!*.m
+
