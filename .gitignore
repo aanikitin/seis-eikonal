@@ -1,7 +1,12 @@
+# Use whitelist to avoid dealing with accidental garbage from different IDEs
 # Ignore everything
 *
-# but not subdirs
-!*/
+# but not project subdirs
+!cmake/
+!include/
+!src/
+!test/
+!wrappers/
 # and files such as
 !.gitignore
 !.gitattributes

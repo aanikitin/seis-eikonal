@@ -136,7 +136,7 @@ int main(int argc, char *argv[]){
 
     t1 = omp_get_wtime();
 #ifndef TEST_FSM
-    IMP_NAME = OPENST_LSM3D_IMP_NAME;
+    IMP_NAME = OPENST_LSM3D_COMPUTEPARTIAL_IMP_NAME;
     errcode = OpenST_LSM3D_Init_2(U,LSM_UNLOCKED,V,
                         NI,NJ,NK,
                         HI,HJ,HK,

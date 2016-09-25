@@ -43,6 +43,22 @@ set(OPENST_DEFAULT_FSM3D_BLOCKSERIAL "fsm3d_blockserial_v2.c")
 set(OPENST_DEFAULT_LSM3D_BLOCKSERIAL "lsm3d_blockserial_v2.c")
 endif()
 
+if(NOT DEFINED FSM3D_IMP)
+    set(FSM3D_IMP "${OPENST_DEFAULT_FSM3D}")
+endif()
+
+if(NOT DEFINED LSM3D_IMP)
+    set(LSM3D_IMP "${OPENST_DEFAULT_LSM3D}")
+endif()
+
+if(NOT DEFINED FSM3D_BLOCKSERIAL_IMP)
+    set(FSM3D_BLOCKSERIAL_IMP "${OPENST_DEFAULT_FSM3D_BLOCKSERIAL}")
+endif()
+
+if(NOT DEFINED LSM3D_BLOCKSERIAL_IMP)
+    set(LSM3D_BLOCKSERIAL_IMP "${OPENST_DEFAULT_LSM3D_BLOCKSERIAL}")
+endif()
+
 # set output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib")
@@ -119,11 +135,11 @@ file(GLOB_RECURSE SRC_LIST RELATIVE "${PROJECT_SOURCE_DIR}" "src/*.c" "include/*
 # === IMPLEMENTATIONS CHOICE ===
 # ==============================
 # FSM3D
-SelectImplementation("${SRC_LIST}" "src/openst/eikonal/fsm/fsm3d_computepartial" "${OPENST_DEFAULT_FSM3D}")
-SelectImplementation("${SRC_LIST}" "src/openst/eikonal/fsm/fsm3d_blockserial" "${OPENST_DEFAULT_FSM3D_BLOCKSERIAL}")
+SelectImplementation("${SRC_LIST}" "src/openst/eikonal/fsm/fsm3d_computepartial" "${FSM3D_IMP}")
+SelectImplementation("${SRC_LIST}" "src/openst/eikonal/fsm/fsm3d_blockserial" "${FSM3D_BLOCKSERIAL_IMP}")
 # LSM3D
-SelectImplementation("${SRC_LIST}" "src/openst/eikonal/lsm/lsm3d_computepartial" "${OPENST_DEFAULT_LSM3D}")
-SelectImplementation("${SRC_LIST}" "src/openst/eikonal/lsm/lsm3d_blockserial" "${OPENST_DEFAULT_LSM3D_BLOCKSERIAL}")
+SelectImplementation("${SRC_LIST}" "src/openst/eikonal/lsm/lsm3d_computepartial" "${LSM3D_IMP}")
+SelectImplementation("${SRC_LIST}" "src/openst/eikonal/lsm/lsm3d_blockserial" "${LSM3D_BLOCKSERIAL_IMP}")
 
 message(STATUS "FINAL SRC_LIST: ${SRC_LIST}")
 

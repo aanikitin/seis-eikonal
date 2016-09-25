@@ -12,3 +12,4 @@ macro(SetStdC99)
   endif()
   set (CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
 endmacro(SetStdC99)
+

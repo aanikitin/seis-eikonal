@@ -178,7 +178,7 @@ int main(int argc, char *argv[]){
 
     t1 = omp_get_wtime();
 #ifndef TEST_FSM
-    IMP_NAME = OPENST_LSM3D_IMP_NAME;
+    IMP_NAME = OPENST_LSM3D_COMPUTEPARTIAL_IMP_NAME;
     IMP_BLOCKSERIAL_NAME = OPENST_LSM3D_BLOCKSERIAL_IMP_NAME;
     errcode = OpenST_LSM3D_Init_2(U,LSM_UNLOCKED,V,
                         NI,NJ,NK,
@@ -187,7 +187,7 @@ int main(int argc, char *argv[]){
                         &SRCidx,&SRCidx_NI,&SRCidx_NJ,
                         OPENST_FSM3D_INIT_DEFAULT);
 #else
-    IMP_NAME = OPENST_FSM3D_IMP_NAME;
+    IMP_NAME = OPENST_FSM3D_COMPUTEPARTIAL_IMP_NAME;
     IMP_BLOCKSERIAL_NAME = OPENST_FSM3D_BLOCKSERIAL_IMP_NAME;
     errcode = OpenST_FSM3D_Init_2(U,V,
                         NI,NJ,NK,

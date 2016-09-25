@@ -4,8 +4,11 @@ rm -rf bin
 rm -rf build
 rm -rf lib
 mkdir build
-# compile with default settings
 cd build
-cmake ..
+# compile with LTO enabled (requires up-to-date gcc, gcc-ar and gcc-ranlib)
+# tested with gcc 5.4.0
+# switch to OFF if unsuccessful
+cmake -DGCC_LTO:BOOL=ON ..
 make
 ctest ..
+

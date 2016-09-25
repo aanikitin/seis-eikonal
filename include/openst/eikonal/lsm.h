@@ -17,8 +17,8 @@ extern "C" {
 #include "openst/common/error.h"
 #include "openst/eikonal/fsm.h"
 
-OPENST_API extern const char OPENST_LSM3D_IMP_NAME[];
-OPENST_API extern const size_t OPENST_LSM3D_IMP_NAME_LENGTH;
+OPENST_API extern const char OPENST_LSM3D_COMPUTEPARTIAL_IMP_NAME[];
+OPENST_API extern const size_t OPENST_LSM3D_COMPUTEPARTIAL_IMP_NAME_LENGTH;
 
 OPENST_API extern const char OPENST_LSM3D_BLOCKSERIAL_IMP_NAME[];
 OPENST_API extern const size_t OPENST_LSM3D_BLOCKSERIAL_IMP_NAME_LENGTH;

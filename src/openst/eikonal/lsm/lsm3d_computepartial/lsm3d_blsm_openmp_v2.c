@@ -3,8 +3,8 @@
 #define M_LSM3D_IMP_NAME "lsm3d_blsm_openmp_v2.c"
 
 
-const char OPENST_LSM3D_IMP_NAME[] = M_LSM3D_IMP_NAME;
-const size_t OPENST_LSM3D_IMP_NAME_LENGTH = sizeof(M_LSM3D_IMP_NAME);
+const char OPENST_LSM3D_COMPUTEPARTIAL_IMP_NAME[] = M_LSM3D_IMP_NAME;
+const size_t OPENST_LSM3D_COMPUTEPARTIAL_IMP_NAME_LENGTH = sizeof(M_LSM3D_IMP_NAME);
 
 
 int OpenST_LSM3D_ComputePartial(double *U, char *LSM_UNLOCKED, double *V,

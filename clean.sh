@@ -10,3 +10,4 @@ cd wrappers/fortran
 sh clean.sh
 cd ../matlab
 rm -rf *.mex
+
