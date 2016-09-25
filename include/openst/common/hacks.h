@@ -1,6 +1,10 @@
 #ifndef OPENST_COMMON_HACKS_H
 #define OPENST_COMMON_HACKS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define OPENST_HACK_MIN(a,b) (((a)<(b))?(a):(b))
 #define OPENST_HACK_MAX(a,b) (((a)>(b))?(a):(b))
 
@@ -36,5 +40,9 @@
 #endif
 
 #endif /* if OPENST_HACK */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* OPENST_COMMON_HACKS_H */

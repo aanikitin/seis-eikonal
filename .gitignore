@@ -4,6 +4,7 @@
 !*/
 # and files such as
 !.gitignore
+!.gitattributes
 !LICENSE
 !README.md
 !CMakeLists.txt
@@ -12,4 +13,5 @@
 !*.sh
 !*.f90
 !*.m
+!*.cmake
 
