@@ -1,6 +1,9 @@
 #ifndef OPENST_COMMON_HACKS_H
 #define OPENST_COMMON_HACKS_H
 
+#define OPENST_HACK_MIN(a,b) (((a)<(b))?(a):(b))
+#define OPENST_HACK_MAX(a,b) (((a)>(b))?(a):(b))
+
 /* Enable dirty hacks for missing C99 support in old Visual Studio versions */
 #ifdef _MSC_VER
 #if (_MSC_VER < 1900)

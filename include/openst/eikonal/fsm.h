@@ -1,3 +1,4 @@
+// WARNING: Will suffer significant performance drop if link-time optimization is not enabled
 #ifndef OPENST_EIKONAL_FSM_H
 #define OPENST_EIKONAL_FSM_H
 
@@ -18,8 +19,11 @@ extern "C" {
 #include "openst/common/coordsys.h"
 #include "openst/common/interp.h"
 
-OPENST_API extern const char OPENST_FSM3D_IMP_NAME[];
-OPENST_API extern const size_t OPENST_FSM3D_IMP_NAME_LENGTH;
+OPENST_API extern const char OPENST_FSM3D_COMPUTEPARTIAL_IMP_NAME[];
+OPENST_API extern const size_t OPENST_FSM3D_COMPUTEPARTIAL_IMP_NAME_LENGTH;
+
+OPENST_API extern const char OPENST_FSM3D_BLOCKSERIAL_IMP_NAME[];
+OPENST_API extern const size_t OPENST_FSM3D_BLOCKSERIAL_IMP_NAME_LENGTH;
 
 typedef enum OPENST_FSM3D_INIT_METHOD_enum{
     OPENST_FSM3D_INIT_POINT,
@@ -73,11 +77,25 @@ OPENST_API int OpenST_FSM3D_BlockSerial(double *U, double *V,
                                         size_t isize, size_t jsize, size_t ksize,
                                         double EPS);
 
+OPENST_API int OpenST_FSM3D_BlockSerial_1H(double *U, double *V,
+                                           size_t NI, size_t NJ, size_t NK,
+                                           double H,
+                                           int REVI, int REVJ, int REVK,
+                                           size_t istart, size_t jstart, size_t kstart,
+                                           size_t isize, size_t jsize, size_t ksize,
+                                           double EPS);
+
 OPENST_API int OpenST_FSM3D_NodeUpdate(double *U, double *V,
                                        size_t NI, size_t NJ, size_t NK,
                                        double HI, double HJ, double HK,
                                        int REVI, int REVJ, int REVK,
                                        size_t ir, size_t jr, size_t kr, double EPS);
+
+OPENST_API int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
+                                          size_t NI, size_t NJ, size_t NK,
+                                          double H,
+                                          int REVI, int REVJ, int REVK,
+                                          size_t ir, size_t jr, size_t kr, double EPS);
 
 OPENST_API void OpenST_FSM3D_GetSweepOrder(int it, int *REVI, int *REVJ, int *REVK);
 

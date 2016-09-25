@@ -106,7 +106,7 @@ int main(int argc, char *argv[]){
     int OMP_MAX_THREADS;
     double vmin, vmax, vmean;
     double EPS, EPS_MULT, EIK3D_Time, BRT3D_TSTEP;
-    const char *IMP_NAME;
+    const char *IMP_NAME, *IMP_BLOCKSERIAL_NAME;
     int usage_flag;
     size_t SRCidx_i, i, j, k;
     size_t *SRCidx, SRCidx_NI, SRCidx_NJ;
@@ -179,6 +179,7 @@ int main(int argc, char *argv[]){
     t1 = omp_get_wtime();
 #ifndef TEST_FSM
     IMP_NAME = OPENST_LSM3D_IMP_NAME;
+    IMP_BLOCKSERIAL_NAME = OPENST_LSM3D_BLOCKSERIAL_IMP_NAME;
     errcode = OpenST_LSM3D_Init_2(U,LSM_UNLOCKED,V,
                         NI,NJ,NK,
                         HI,HJ,HK,
@@ -187,6 +188,7 @@ int main(int argc, char *argv[]){
                         OPENST_FSM3D_INIT_DEFAULT);
 #else
     IMP_NAME = OPENST_FSM3D_IMP_NAME;
+    IMP_BLOCKSERIAL_NAME = OPENST_FSM3D_BLOCKSERIAL_IMP_NAME;
     errcode = OpenST_FSM3D_Init_2(U,V,
                         NI,NJ,NK,
                         HI,HJ,HK,
@@ -235,7 +237,7 @@ int main(int argc, char *argv[]){
              SRCI, SRCJ, SRCK, &L1, &L2, &Linf, &Umin, &Umax, &Umean);
 
     printf("\n====================================================\n");
-    printf("TEST_ID,METHOD_ID,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K," \
+    printf("TEST_ID,IMP_ID,BLOCK_IMP_ID,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K," \
            "EPS,max_iter,it,converged,sec,L1(MAE),L2(MSE),L_inf," \
            "Umin,Umean,Umax," \
            "NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE\n");
@@ -244,10 +246,10 @@ int main(int argc, char *argv[]){
     printf("%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e,%e,%e,%e,%e,%e,%e," \
            "%Iu,%Iu,%Iu,%e,%e,%e,%s\n",
 #else
-    printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e,%e,%e,%e,%e,%e,%e," \
+    printf("%s,%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e,%e,%e,%e,%e,%e,%e," \
            "%zu,%zu,%zu,%e,%e,%e,%s\n",
 #endif
-           TEST_ID,IMP_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
+           TEST_ID,IMP_NAME,IMP_BLOCKSERIAL_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
            EPS,max_iter,it,converged,EIK3D_Time,L1,L2,Linf,Umin,Umean,Umax,
            NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE_STATIC
            );

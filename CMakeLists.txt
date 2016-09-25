@@ -1,25 +1,24 @@
 # TODO: cleanup build scripts
 # TODO: move fortran to CMake build
+
+# Enable LTO-capable GNU wrappers
+if(GCC_LTO)
+    message(STATUS "GCC_LTO: ${GCC_LTO}")
+    set(CMAKE_AR "gcc-ar" CACHE STRING "AR" FORCE)
+    set(CMAKE_RANLIB "gcc-ranlib" CACHE STRING "RANLIB" FORCE)
+    set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> rcs <TARGET> <LINK_FLAGS> <OBJECTS>" CACHE STRING "AR TEMPLATE" FORCE)
+endif()
+
 project(OpenST)
 cmake_minimum_required(VERSION 3.0)
-# set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 message(STATUS "CMAKE_VERSION: ${CMAKE_VERSION}")
 
-# OpenST uses C99 standard extensively
-macro(use_c99)
-  if(CMAKE_VERSION VERSION_LESS "3.1")
-    if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-        set (CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
-    endif()
-    if(CMAKE_C_COMPILER_ID MATCHES "Intel" AND WIN32)
-        set(CMAKE_C_FLAGS "/Qstd=c99 ${CMAKE_C_FLAGS}")
-    endif()
-  else()
-    set(CMAKE_C_STANDARD 99)
-  endif()
-endmacro(use_c99)
+LIST(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+include(SelectImplementation)
+include(SetStdC99)
 
-use_c99()
+SetStdC99()
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release
@@ -35,9 +34,13 @@ set(CMAKE_SKIP_RPATH TRUE)
 if(NOT MSVC)
 set(OPENST_DEFAULT_FSM3D "fsm3d_bfsm_openmp_v1.c")
 set(OPENST_DEFAULT_LSM3D "lsm3d_blsm_openmp_v1.c")
+set(OPENST_DEFAULT_FSM3D_BLOCKSERIAL "fsm3d_blockserial_v2.c")
+set(OPENST_DEFAULT_LSM3D_BLOCKSERIAL "lsm3d_blockserial_v2.c")
 elseif(MSVC)
 set(OPENST_DEFAULT_FSM3D "fsm3d_bfsm_openmp_v2.c")
 set(OPENST_DEFAULT_LSM3D "lsm3d_blsm_openmp_v2.c")
+set(OPENST_DEFAULT_FSM3D_BLOCKSERIAL "fsm3d_blockserial_v2.c")
+set(OPENST_DEFAULT_LSM3D_BLOCKSERIAL "lsm3d_blockserial_v2.c")
 endif()
 
 # set output directories
@@ -59,6 +62,8 @@ endif()
 # COMPILER FLAGS
 message(STATUS "CMAKE_C_COMPILER: ${CMAKE_C_COMPILER} \
 [${CMAKE_C_COMPILER_ID} ${CMAKE_C_COMPILER_VERSION}]")
+message(STATUS "CMAKE_AR: ${CMAKE_AR}")
+message(STATUS "CMAKE_RANLIB: ${CMAKE_RANLIB}")
 
 # Enable OpenMP
 find_package(OpenMP)
@@ -70,6 +75,11 @@ else()
 endif()
 
 if(CMAKE_COMPILER_IS_GNUCC)
+    # enable LTO flags
+    if(GCC_LTO)
+        set(CMAKE_C_FLAGS "-flto ${CMAKE_C_FLAGS}")
+    endif()
+    # warnings
     set(CMAKE_C_FLAGS "-Winline -Wall -Wextra -Wconversion \
 -Wfatal-errors -Wdouble-promotion -fmessage-length=0 \
 -pedantic ${CMAKE_C_FLAGS}")
@@ -108,39 +118,12 @@ file(GLOB_RECURSE SRC_LIST RELATIVE "${PROJECT_SOURCE_DIR}" "src/*.c" "include/*
 # ==============================
 # === IMPLEMENTATIONS CHOICE ===
 # ==============================
-# TODO: replace with function()
-
 # FSM3D
-# remove FSM3D implementation
-file(GLOB_RECURSE FSM3D_IMP_LIST RELATIVE "${PROJECT_SOURCE_DIR}"
-    "src/openst/eikonal/fsm/fsm3d_imp/*.c")
-message(STATUS "FSM3D_IMP_LIST: ${FSM3D_IMP_LIST}")
-list(REMOVE_ITEM SRC_LIST ${FSM3D_IMP_LIST})
-# set FSM3D implementation
-if(NOT DEFINED FSM3D_IMP)
-  set(FSM3D_IMP_PATH ${OPENST_DEFAULT_FSM3D} CACHE FILEPATH
-      "FSM3D implementation .c filepath")
-  get_filename_component(FSM3D_IMP "${FSM3D_IMP_PATH}" NAME)
-endif()
-add_definitions(-DFSM3D_IMP="${FSM3D_IMP}")
-message(STATUS "FSM3D_IMP: ${FSM3D_IMP}")
-list(APPEND SRC_LIST "src/openst/eikonal/fsm/fsm3d_imp/${FSM3D_IMP}")
-
+SelectImplementation("${SRC_LIST}" "src/openst/eikonal/fsm/fsm3d_computepartial" "${OPENST_DEFAULT_FSM3D}")
+SelectImplementation("${SRC_LIST}" "src/openst/eikonal/fsm/fsm3d_blockserial" "${OPENST_DEFAULT_FSM3D_BLOCKSERIAL}")
 # LSM3D
-# remove LSM3D implementation
-file(GLOB_RECURSE LSM3D_IMP_LIST RELATIVE "${PROJECT_SOURCE_DIR}"
-    "src/openst/eikonal/lsm/lsm3d_imp/*.c")
-message(STATUS "LSM3D_IMP_LIST: ${LSM3D_IMP_LIST}")
-list(REMOVE_ITEM SRC_LIST ${LSM3D_IMP_LIST})
-# set LSM3D implementation
-if(NOT DEFINED LSM3D_IMP)
-  set(LSM3D_IMP_PATH ${OPENST_DEFAULT_LSM3D} CACHE FILEPATH
-      "LSM3D implementation .c filepath")
-  get_filename_component(LSM3D_IMP "${LSM3D_IMP_PATH}" NAME)
-endif()
-add_definitions(-DLSM3D_IMP="${LSM3D_IMP}")
-message(STATUS "LSM3D_IMP: ${LSM3D_IMP}")
-list(APPEND SRC_LIST "src/openst/eikonal/lsm/lsm3d_imp/${LSM3D_IMP}")
+SelectImplementation("${SRC_LIST}" "src/openst/eikonal/lsm/lsm3d_computepartial" "${OPENST_DEFAULT_LSM3D}")
+SelectImplementation("${SRC_LIST}" "src/openst/eikonal/lsm/lsm3d_blockserial" "${OPENST_DEFAULT_LSM3D_BLOCKSERIAL}")
 
 message(STATUS "FINAL SRC_LIST: ${SRC_LIST}")
 
@@ -192,5 +175,5 @@ add_subdirectory(test build/test)
 # ==== MISC ====
 # workaround for Qt Creator project tree not showing includes etc.
 # doesn't affect build process
-#file(GLOB_RECURSE DUMMY_HEADERS "${PROJECT_SOURCE_DIR}" *.h *.c)
-#add_custom_target(dummy ALL SOURCES ${DUMMY_HEADERS})
+file(GLOB_RECURSE DUMMY_HEADERS "${PROJECT_SOURCE_DIR}" *.h *.c)
+add_custom_target(dummy ALL SOURCES ${DUMMY_HEADERS})

@@ -1,3 +1,4 @@
+// WARNING: Will suffer significant performance drop if link-time optimization must is not enabled
 #ifndef OPENST_EIKONAL_LSM_H
 #define OPENST_EIKONAL_LSM_H
 
@@ -18,6 +19,9 @@ extern "C" {
 
 OPENST_API extern const char OPENST_LSM3D_IMP_NAME[];
 OPENST_API extern const size_t OPENST_LSM3D_IMP_NAME_LENGTH;
+
+OPENST_API extern const char OPENST_LSM3D_BLOCKSERIAL_IMP_NAME[];
+OPENST_API extern const size_t OPENST_LSM3D_BLOCKSERIAL_IMP_NAME_LENGTH;
 
 OPENST_API OPENST_ERR OpenST_LSM3D(double *U, char *LSM_UNLOCKED, double *V,
                                    size_t NI, size_t NJ, size_t NK,
@@ -61,12 +65,26 @@ OPENST_API int OpenST_LSM3D_BlockSerial(double *U, char *LSM_UNLOCKED, double *V
                                         size_t isize, size_t jsize, size_t ksize,
                                         double EPS);
 
+OPENST_API int OpenST_LSM3D_BlockSerial_1H(double *U, char *LSM_UNLOCKED, double *V,
+                                           size_t NI, size_t NJ, size_t NK,
+                                           double H,
+                                           int REVI, int REVJ, int REVK,
+                                           size_t istart, size_t jstart, size_t kstart,
+                                           size_t isize, size_t jsize, size_t ksize,
+                                           double EPS);
+
 OPENST_API int OpenST_LSM3D_NodeUpdate(double *U, char *LSM_UNLOCKED, double *V,
                                        size_t NI, size_t NJ, size_t NK,
                                        double HI, double HJ, double HK,
                                        int REVI, int REVJ, int REVK,
                                        size_t ir, size_t jr, size_t kr,
                                        double EPS);
+
+OPENST_API int OpenST_LSM3D_NodeUpdate_1H(double *U, char *LSM_UNLOCKED, double *V,
+                                          size_t NI, size_t NJ, size_t NK,
+                                          double H,
+                                          int REVI, int REVJ, int REVK,
+                                          size_t ir, size_t jr, size_t kr, double EPS);
 
 #ifdef __cplusplus
 }
