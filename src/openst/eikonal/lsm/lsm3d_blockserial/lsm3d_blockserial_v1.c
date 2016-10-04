@@ -1,13 +1,13 @@
 #include "openst/eikonal/lsm.h"
 
-#define M_LSM3D_BLOCKSERIAL_IMP_NAME "lsm3d_blockserial_v2.c"
+#define M_LSM3D_BLOCKSERIAL_IMP_NAME "lsm3d_blockserial_v1.c"
 
 
 const char OPENST_LSM3D_BLOCKSERIAL_IMP_NAME[] = M_LSM3D_BLOCKSERIAL_IMP_NAME;
 const size_t OPENST_LSM3D_BLOCKSERIAL_IMP_NAME_LENGTH = sizeof(OPENST_LSM3D_BLOCKSERIAL_IMP_NAME);
 
 
-inline int OpenST_LSM3D_BlockSerial_1H(double *U, char *LSM_UNLOCKED, double *V,
+int OpenST_LSM3D_BlockSerial_1H(double *U, char *LSM_UNLOCKED, double *V,
                                 size_t NI, size_t NJ, size_t NK,
                                 double H,
                                 int REVI, int REVJ, int REVK,

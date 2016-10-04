@@ -1,4 +1,4 @@
-// WARNING: Will suffer significant performance drop if link-time optimization must is not enabled
+// WARNING: Will suffer significant performance drop if link-time optimization is not enabled
 #ifndef OPENST_EIKONAL_LSM_H
 #define OPENST_EIKONAL_LSM_H
 

@@ -7,7 +7,7 @@ const char OPENST_FSM3D_BLOCKSERIAL_IMP_NAME[] = M_FSM3D_BLOCKSERIAL_IMP_NAME;
 const size_t OPENST_FSM3D_BLOCKSERIAL_IMP_NAME_LENGTH = sizeof(OPENST_FSM3D_BLOCKSERIAL_IMP_NAME);
 
 
-inline int OpenST_FSM3D_BlockSerial_1H(double *U, double *V,
+int OpenST_FSM3D_BlockSerial_1H(double *U, double *V,
                                 size_t NI, size_t NJ, size_t NK,
                                 double H,
                                 int REVI, int REVJ, int REVK,

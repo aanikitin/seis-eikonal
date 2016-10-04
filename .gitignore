@@ -2,11 +2,7 @@
 # Ignore everything
 *
 # but not project subdirs
-!cmake/
-!include/
-!src/
-!test/
-!wrappers/
+!*/
 # and files such as
 !.gitignore
 !.gitattributes

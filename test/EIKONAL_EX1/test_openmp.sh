@@ -10,10 +10,10 @@ do
 	for ntest in `seq ${9} ${10} ${11}`
 	do
 	    TNAME="${bin_name}-dim-${i}-thr-${t}-ntest-${ntest}.csv"
-	    echo $TNAME
+	    echo ${TNAME}
 	    exec 3>&2
 	    exec 2>> ${dir}/${TNAME}
-	    OMP_NUM_THREADS=$t ./${2} ${i} ${i} ${i} >> ${dir}/${TNAME}
+	    OMP_NUM_THREADS=${t} ./${2} ${i} ${i} ${i} >> ${dir}/${TNAME}
 	    exec 2>&3
 	done
     done

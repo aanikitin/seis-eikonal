@@ -5,4 +5,3 @@ function(SelectImplementation SRC_LIST IMP_DIR IMP_NAME)
     list(APPEND SRC_LIST "${IMP_DIR}/${IMP_NAME}")
     set(SRC_LIST "${SRC_LIST}" PARENT_SCOPE)
 endfunction(SelectImplementation)
-

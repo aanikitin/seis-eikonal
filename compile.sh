@@ -11,4 +11,3 @@ cd build
 cmake -DGCC_LTO:BOOL=ON ..
 make
 ctest ..
-
