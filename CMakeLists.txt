@@ -87,7 +87,8 @@ else()
 endif()
 
 if(NOT WIN32)
-	if(${FSM3D_IMP} MATCHES "fsm3d_blockserial_v3.c" OR ${LSM3D_IMP} MATCHES "lsm3d_blockserial_v3.c")
+        if((FSM3D_IMP MATCHES "fsm3d_bfsm_openmp_v3.c") OR (LSM3D_IMP MATCHES "lsm3d_blsm_openmp_v3.c"))
+                message(STATUS "Linking with libpthread enabled")
                 # pthread for v3
                 set(CMAKE_C_FLAGS "-lpthread ${CMAKE_C_FLAGS}")
 	endif()

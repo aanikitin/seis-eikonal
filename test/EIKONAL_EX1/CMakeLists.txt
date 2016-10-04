@@ -7,5 +7,5 @@ else()
     target_link_libraries(EIKONAL_EX1 OPENST_STATIC)
 endif()
 
-target_compile_definitions(EIKONAL_EX1 PRIVATE -DTEST_FSM)
+# target_compile_definitions(EIKONAL_EX1 PRIVATE -DTEST_FSM)
 add_test(NAME EIKONAL_EX1 COMMAND $<TARGET_FILE:EIKONAL_EX1>)
