@@ -1,6 +1,6 @@
 #include "openst/eikonal/fsm.h"
 
-#define M_FSM3D_IMP_NAME "fsm3d_bfsm_openmp_v1.c"
+#define M_FSM3D_IMP_NAME "BFSMv1"
 
 
 const char OPENST_FSM3D_COMPUTEPARTIAL_IMP_NAME[] = M_FSM3D_IMP_NAME;
@@ -14,12 +14,16 @@ int OpenST_FSM3D_ComputePartial(double *U, double *V,
                                 size_t BSIZE_I, size_t BSIZE_J, size_t BSIZE_K,
                                 double EPS){
 
-    int total_it, it, notconvergedl;
+    int total_it, it, notconvergedl, notconvergedt;
     int REVI, REVJ, REVK;
-    size_t ir, jr, kr;
     size_t NBI, NBJ, NBK;
-    int *notconvergedt;
-    int ***U3d;
+
+#if (_OPENMP > 200203)
+    size_t levelr, K1, K2, kr, level, I1, I2, ir, jr;
+#else
+	#pragma message("WARNING: size_t to ptrdiff_t cast enabled")
+    ptrdiff_t levelr, K1, K2, kr, level, I1, I2, ir, jr;
+#endif
 
     if(start_iter >= max_iter){
         return max_iter;
@@ -32,177 +36,65 @@ int OpenST_FSM3D_ComputePartial(double *U, double *V,
     NBJ = NJ/BSIZE_J + (NJ % BSIZE_J > 0);
     NBK = NK/BSIZE_K + (NK % BSIZE_K > 0);
 
-    notconvergedt = (int *)malloc(sizeof(int) * NBI * NBJ * NBK);
-    U3d = (int ***)malloc(sizeof(int **) * NBI);
-    for(ir = 0; ir < NBI; ++ir){
-        U3d[ir] = (int **)malloc(sizeof(int *) * NBJ);
-        for(jr = 0; jr < NBJ; ++jr){
-            U3d[ir][jr] = &notconvergedt[ir * NBJ * NBK + jr * NBK];
-        }
-    }
-
 #pragma omp parallel default(none) \
-    shared(BSIZE_I, BSIZE_J, BSIZE_K, NBI, NBJ, NBK, total_it, notconvergedl, \
-    NI, NJ, NK, ir, jr, kr, \
-    U, V, HI, HJ, HK, start_iter, max_iter, notconvergedt, REVI, REVJ, REVK, U3d, \
-    EPS) \
-    private(it)
+    shared(BSIZE_I, BSIZE_J, BSIZE_K, NBI, NBJ, NBK, \
+    start_iter, total_it, notconvergedl, NI, NJ, NK, \
+    U, V, HI, HJ, HK, max_iter, EPS) \
+    private(it, REVI, REVJ, REVK, notconvergedt, \
+    levelr, K1, K2, level, I1, I2, ir, jr, kr)
     {
-
         for(it = start_iter; it < max_iter; ++it){
-
 #pragma omp single nowait
             {
                 ++total_it;
                 notconvergedl = 0;
+            }
 
-                OpenST_FSM3D_GetSweepOrder(it, &REVI, &REVJ, &REVK);
+            notconvergedt = 0;
 
-#pragma omp task default(shared) firstprivate(ir, jr, kr, REVI, REVJ, REVK) \
-    depend(out: U3d[0:1][0:1][0:1])
-                notconvergedt[0] =
-                        OpenST_FSM3D_BlockSerial(U, V,
-                                                 NI, NJ, NK,
-                                                 HI, HJ, HK,
-                                                 REVI, REVJ, REVK,
-                                                 0, 0, 0,
-                                                 BSIZE_I, BSIZE_J, BSIZE_K, EPS);
+            OpenST_FSM3D_GetSweepOrder(it, &REVI, &REVJ, &REVK);
 
+            for(levelr = 0; levelr < NBI + NBJ + NBK - 2; ++levelr){
 
-                for(ir = 1; ir < NBI; ++ir){
-#pragma omp task default(shared) firstprivate(ir, jr, kr, REVI, REVJ, REVK) \
-    depend(in: U3d[(ir - 1) : 1][0 : 1][0: 1]) \
-    depend(out: U3d[ir : 1][0 : 1][0 : 1])
-                    notconvergedt[ir * NBJ * NBK] =
-                            OpenST_FSM3D_BlockSerial(U, V,
-                                                     NI, NJ, NK,
-                                                     HI, HJ, HK,
-                                                     REVI, REVJ, REVK,
-                                                     ir * BSIZE_I, 0, 0,
-                                                     BSIZE_I, BSIZE_J, BSIZE_K, EPS);
-                }
+                K1 = (NBI + NBJ - 2 < levelr) ?
+                            (levelr - NBI - NBJ + 2) : 0;
+                K2 = (NBK - 1 > levelr) ? levelr : NBK - 1;
 
-                for(kr = 1; kr < NBK; ++kr){
-#pragma omp task default(shared) firstprivate(ir, jr, kr, REVI, REVJ, REVK) \
-    depend(in: U3d[0 : 1][0 : 1][(kr - 1) : 1]) \
-    depend(out: U3d[0 : 1][0 : 1][kr : 1])
-                    notconvergedt[kr] =
-                            OpenST_FSM3D_BlockSerial(U, V,
-                                                     NI, NJ, NK,
-                                                     HI, HJ, HK,
-                                                     REVI, REVJ, REVK,
-                                                     0, 0, kr * BSIZE_K,
-                                                     BSIZE_I, BSIZE_J, BSIZE_K, EPS);
-                }
+                for(kr = K1; kr <= K2; ++kr){
+                    level = levelr - kr;
 
+                    I1 = (NBJ - 1 < level) ? (level - NBJ + 1) : 0;
+                    I2 = (NBI - 1 > level) ? level : NBI - 1;
 
-                for(ir = 1; ir < NBI; ++ir){
-                    for(kr = 1; kr < NBK; ++kr){
-#pragma omp task default(shared) firstprivate(ir, jr, kr, REVI, REVJ, REVK) \
-    depend(in: U3d[(ir - 1) : 1][0 : 1][kr : 1]) \
-    depend(in: U3d[ir : 1][0 : 1][(kr - 1) : 1]) \
-    depend(out: U3d[ir : 1][0 : 1][kr : 1])
-                        notconvergedt[ir * NBJ * NBK + kr] =
-                                OpenST_FSM3D_BlockSerial(U, V,
-                                                         NI, NJ, NK,
-                                                         HI, HJ, HK,
-                                                         REVI, REVJ, REVK,
-                                                         ir * BSIZE_I, 0,
-                                                         kr * BSIZE_K,
-                                                         BSIZE_I, BSIZE_J, BSIZE_K, EPS);
-                    }
-                }
+#pragma omp for nowait schedule(dynamic,1)
+                    for(ir = I1; ir <= I2; ++ir){
+                        jr = level - ir;
 
-                for(jr = 1; jr < NBJ; ++jr){
-#pragma omp task default(shared) firstprivate(ir, jr, kr, REVI, REVJ, REVK) \
-    depend(in: U3d[0 : 1][(jr - 1) : 1][0 : 1]) \
-    depend(out: U3d[0 : 1][jr  : 1][0 : 1])
-                    notconvergedt[jr * NBK] =
-                            OpenST_FSM3D_BlockSerial(U, V,
-                                                     NI, NJ, NK,
-                                                     HI, HJ, HK,
-                                                     REVI, REVJ, REVK,
-                                                     0, jr * BSIZE_J, 0,
-                                                     BSIZE_I, BSIZE_J, BSIZE_K, EPS);
-                }
-
-                for(jr = 1; jr < NBJ; ++jr){
-                    for(kr = 1; kr < NBK; ++kr){
-#pragma omp task default(shared) firstprivate(ir, jr, kr, REVI, REVJ, REVK) \
-    depend(in: U3d[0 : 1][(jr - 1) : 1][kr : 1]) \
-    depend(in: U3d[0 : 1][jr : 1][(kr - 1) : 1]) \
-    depend(out: U3d[0 : 1][jr : 1][kr : 1])
-                        notconvergedt[jr * NBK + kr] =
-                                OpenST_FSM3D_BlockSerial(U, V,
-                                                         NI, NJ, NK,
-                                                         HI, HJ, HK,
-                                                         REVI, REVJ, REVK,
-                                                         0, jr * BSIZE_J,
-                                                         kr * BSIZE_K,
-                                                         BSIZE_I, BSIZE_J, BSIZE_K, EPS);
-                    }
-                }
-
-                for(ir = 1; ir < NBI; ++ir){
-                    for(jr = 1; jr < NBJ; ++jr){
-#pragma omp task default(shared) firstprivate(ir, jr, kr, REVI, REVJ, REVK) \
-    depend(in: U3d[(ir - 1) : 1][jr : 1][0 : 1]) \
-    depend(in: U3d[ir : 1][(jr - 1) : 1][0 : 1]) \
-    depend(out: U3d[ir : 1][jr : 1][0 : 1])
-                        notconvergedt[ir * NBJ * NBK + jr * NBK] =
-                                OpenST_FSM3D_BlockSerial(U, V,
-                                                         NI, NJ, NK,
-                                                         HI, HJ, HK,
-                                                         REVI, REVJ, REVK,
-                                                         ir * BSIZE_I, jr * BSIZE_J,
-                                                         0,
-                                                         BSIZE_I, BSIZE_J, BSIZE_K, EPS);
-                    }
-                }
-
-                for(ir = 1; ir < NBI; ++ir){
-                    for(jr = 1; jr < NBJ; ++jr){
-                        for(kr = 1; kr < NBK; ++kr){
-#pragma omp task default(shared) firstprivate(ir, jr, kr, REVI, REVJ, REVK) \
-    depend(in: U3d[(ir - 1) : 1][jr : 1][kr : 1]) \
-    depend(in: U3d[ir : 1][(jr - 1) : 1][kr : 1]) \
-    depend(in: U3d[ir : 1][jr : 1][(kr - 1) : 1]) \
-    depend(out: U3d[ir : 1][jr : 1][kr : 1])
-                            notconvergedt[ir * NBJ * NBK + jr * NBK + kr] =
-                                    OpenST_FSM3D_BlockSerial(U, V,
-                                                             NI, NJ, NK,
-                                                             HI, HJ, HK,
-                                                             REVI, REVJ, REVK,
-                                                             ir * BSIZE_I, jr * BSIZE_J,
-                                                             kr * BSIZE_K,
-                                                             BSIZE_I, BSIZE_J, BSIZE_K, EPS);
+                        if(OpenST_FSM3D_BlockSerial(U, V,
+                                                    NI, NJ, NK,
+                                                    HI, HJ, HK,
+                                                    REVI, REVJ, REVK,
+                                                    ir * BSIZE_I, jr * BSIZE_J,
+                                                    kr * BSIZE_K,
+                                                    BSIZE_I, BSIZE_J, BSIZE_K,
+                                                    EPS)){
+                            notconvergedt = 1;
                         }
                     }
                 }
-            }
+#pragma omp barrier
 
-#pragma omp taskwait
-#pragma omp barrier
-#pragma omp for reduction(+:notconvergedl)
-            for(ir = 0; ir < NBI * NBJ * NBK; ++ir){
-                notconvergedl += notconvergedt[ir];
             }
+#pragma omp atomic
+            notconvergedl += notconvergedt;
 #pragma omp barrier
-#pragma omp flush(notconvergedl)
+#pragma omp flush (notconvergedl)
             if(!notconvergedl){
                 break;
             }
 #pragma omp barrier
         }
     }
-
     *converged = (notconvergedl == 0);
-
-    for(ir = 0; ir < NBI; ++ir){
-        free(U3d[ir]);
-    }
-    free(U3d);
-    free(notconvergedt);
-
     return total_it;
 }

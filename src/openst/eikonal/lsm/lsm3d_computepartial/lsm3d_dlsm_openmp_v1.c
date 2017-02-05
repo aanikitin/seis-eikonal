@@ -1,6 +1,6 @@
 #include "openst/eikonal/lsm.h"
 
-#define M_LSM3D_IMP_NAME "lsm3d_dlsm_openmp_v1.c"
+#define M_LSM3D_IMP_NAME "DLSM"
 
 
 const char OPENST_LSM3D_COMPUTEPARTIAL_IMP_NAME[] = M_LSM3D_IMP_NAME;

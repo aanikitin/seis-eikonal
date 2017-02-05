@@ -12,14 +12,54 @@
 
 #define DEFAULT_SRC 0.5
 #define DEFAULT_MAX_ITER 1000
-#define DEFAULT_EPS_MULT 0.01
+#define DEFAULT_EPS_MULT 1.0
 #define DEFAULT_V_DATASET_NAME "V"
+#define DEFAULT_CONV_TEST 0
 
+void ex_check(double *U, double *Upart, double *Uprev,
+              size_t NI, size_t NJ, size_t NK,
+              double *Umin, double *Umax, double *Umean,
+              double *LinfI, double *LinfF, double *MRE){
+
+    size_t i, j, k, NN;
+    double uval, umin, umax, umean;
+    double diffI, diffF, linfI, linfF, mre;
+    mre = -INFINITY;
+    linfI = -INFINITY;
+    linfF = -INFINITY;
+    umin = INFINITY;
+    umax = -INFINITY;
+    umean = 0.0;
+    NN = NI * NJ * NK;
+    for(i = 0; i < NI; ++i){
+        for(j = 0; j < NJ; ++j){
+            for(k = 0; k < NK; ++k){
+                uval = Upart[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)];
+                umin = fmin(umin,uval);
+                umax = fmax(umax,uval);
+                umean += uval;
+                diffI = Upart[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] - Uprev[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)];
+                diffF = Upart[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] - U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)];
+
+                linfI = fmax(linfI,fabs(diffI));
+                linfF = fmax(linfF,fabs(diffF));
+
+                mre = fmax(mre, fabs(diffF) / U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] * 100);
+            }
+        }
+    }
+    *LinfI = linfI;
+    *LinfF = linfF;
+    *MRE = mre;
+    *Umin = umin;
+    *Umax = umax;
+    *Umean = umean/(double)NN;
+}
 
 void app_info(char *BIN_NAME,int usage){
     printf("TEST_ID: %s\n",TEST_ID);
     if(usage){
-        printf("Usage: %s FILE_IN FILE_OUT SRCI SRCJ SRCK [DATASET] [EPS_MULT] [MAX_ITER] [BSIZE_I BSIZE_J BSIZE_K]\n" \
+        printf("Usage: %s FILE_IN FILE_OUT SRCI SRCJ SRCK [DATASET] [EPS_MULT] [MAX_ITER] [BSIZE_I BSIZE_J BSIZE_K] [CONV_TEST]\n" \
                "\tFILE_IN - HDF5 input file with datasets:\n" \
                "\t\t\"V\" or \"[DATASET]\" - array representing 3D regular velocity grid stored in row major format\n" \
                "\t\t\"HI\", \"HJ\", \"HK\" - grid steps in each dimension\n" \
@@ -28,7 +68,8 @@ void app_info(char *BIN_NAME,int usage){
                "\t[DATASET] - velocity grid dataset name, defaults to \"V\"\n" \
                "\t[EPS_MULT] - EPS convergence parameter multiplier\n" \
                "\t[MAX_ITER] - maximum number of iterations\n" \
-               "\t[BSIZE_I x BSIZE_J x BSIZE_K] - task size\n\n",BIN_NAME);
+               "\t[BSIZE_I x BSIZE_J x BSIZE_K] - task size\n"\
+               "\t[CONV_TEST] - if 1, run convergence test\n\n",BIN_NAME);
     }
 
     printf("%s\n",OPENST_VERSION_STR_FULL_STATIC);
@@ -40,7 +81,7 @@ int main(int argc, char *argv[]){
 
     OPENST_ERR errcode;
     char *FILE_IN, *FILE_OUT, *V_DATASET_NAME;
-    double *U, *V, vmin, vmean,vmax, HI, HJ, HK;
+    double *U, *Upart, *Uprev, *V, vmin, vmean,vmax, HI, HJ, HK;
     int max_iter;
     int it, converged;
     double t1,t2;
@@ -52,9 +93,13 @@ int main(int argc, char *argv[]){
     char *LSM_UNLOCKED;
     int OMP_MAX_THREADS;
     double EPS, EPS_MULT, EIK3D_Time;
-    const char *IMP_NAME;
+    const char *IMP_NAME, *IMP_BLOCKSERIAL_NAME;
     size_t SRCidx_i, i, j, k;
     size_t *SRCidx, SRCidx_NI, SRCidx_NJ;
+    double Umin, Umax, Umean;
+    double LinfI, LinfF, MRE;
+    int conv_test;
+    double ref_time;
 
     if(argc < 6){
         fprintf(stderr,"Error: invalid command line parameters\n");
@@ -119,16 +164,28 @@ int main(int argc, char *argv[]){
         OpenST_FSM3D_SuggestBlockSize(NI,NJ,NK,&BSIZE_I,&BSIZE_J,&BSIZE_K);
     }
 
+    if(argc > 12){
+        conv_test = atoi(argv[12]);
+    } else {
+        conv_test = DEFAULT_CONV_TEST;
+    }
+
     U = (double *)malloc(NI * NJ * NK * sizeof(double));
     assert(U);
+    Upart = (double *)malloc(NI * NJ * NK * sizeof(double));
+    assert(Upart);
+    Uprev = (double *)malloc(NI * NJ * NK * sizeof(double));
+    assert(Uprev);
     LSM_UNLOCKED = (char *)malloc(NI * NJ * NK * sizeof(char));
     assert(LSM_UNLOCKED);
 
     OMP_MAX_THREADS = omp_get_max_threads();
 
+    OpenST_AOP_GetArrStats(V, NI * NJ * NK, &vmin, &vmax, &vmean);
+    printf("Vmin = %e; Vmean = %e; Vmax = %e\n",vmin,vmean,vmax);
+    ref_time = fmin(HI, (fmin(HJ, HK))) / vmax;
+
     if(EPS_MULT != 0.0){
-        OpenST_AOP_GetArrStats(V, NI * NJ * NK, &vmin, &vmax, &vmean);
-        printf("Vmin = %e; Vmean = %e; Vmax = %e\n",vmin,vmean,vmax);
         EPS = EPS_MULT * OpenST_BRT3D_SuggestTSTEP(vmax, HI, HJ, HK);
     } else {
         EPS = 0.0;
@@ -137,20 +194,22 @@ int main(int argc, char *argv[]){
     t1 = omp_get_wtime();
 #ifndef TEST_FSM
     IMP_NAME = OPENST_LSM3D_COMPUTEPARTIAL_IMP_NAME;
+    IMP_BLOCKSERIAL_NAME = OPENST_LSM3D_BLOCKSERIAL_IMP_NAME;
     errcode = OpenST_LSM3D_Init_2(U,LSM_UNLOCKED,V,
-                        NI,NJ,NK,
-                        HI,HJ,HK,
-                        SRCI,SRCJ,SRCK,
-                        &SRCidx,&SRCidx_NI,&SRCidx_NJ,
-                        OPENST_FSM3D_INIT_DEFAULT);
+                                  NI,NJ,NK,
+                                  HI,HJ,HK,
+                                  SRCI,SRCJ,SRCK,
+                                  &SRCidx,&SRCidx_NI,&SRCidx_NJ,
+                                  OPENST_FSM3D_INIT_DEFAULT);
 #else
     IMP_NAME = OPENST_FSM3D_IMP_NAME;
+    IMP_BLOCKSERIAL_NAME = OPENST_FSM3D_BLOCKSERIAL_IMP_NAME;
     errcode = OpenST_FSM3D_Init_2(U,V,
-                        NI,NJ,NK,
-                        HI,HJ,HK,
-                        SRCI,SRCJ,SRCK,
-                        &SRCidx,&SRCidx_NI,&SRCidx_NJ,
-                        OPENST_FSM3D_INIT_DEFAULT);
+                                  NI,NJ,NK,
+                                  HI,HJ,HK,
+                                  SRCI,SRCJ,SRCK,
+                                  &SRCidx,&SRCidx_NI,&SRCidx_NJ,
+                                  OPENST_FSM3D_INIT_DEFAULT);
 #endif
     t2 = omp_get_wtime();
 
@@ -192,21 +251,56 @@ int main(int argc, char *argv[]){
     hdf5_write_time(FILE_OUT,"T",U,&HI,&HJ,&HK,NI,NJ,NK);
 
     printf("\n====================================================\n");
-    printf("TEST_ID,METHOD_ID,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K," \
+    printf("TEST_ID,IMP_ID,BLOCK_IMP_ID,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K," \
            "EPS,max_iter,it,converged,sec," \
            "NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE\n");
 
 #ifdef _MSC_VER
-    printf("%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e," \
+    printf("%s,%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e," \
            "%Iu,%Iu,%Iu,%e,%e,%e,%s\n",
-#else
-    printf("%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e," \
+       #else
+    printf("%s,%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e," \
            "%zu,%zu,%zu,%e,%e,%e,%s\n",
-#endif
-           FILE_IN,IMP_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
+       #endif
+           FILE_IN,IMP_NAME,IMP_BLOCKSERIAL_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
            EPS,max_iter,it,converged,EIK3D_Time,
            NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE_STATIC
            );
+
+    if(conv_test){
+        errcode = OpenST_LSM3D_Init_2(Upart,LSM_UNLOCKED,V,
+                                      NI,NJ,NK,
+                                      HI,HJ,HK,
+                                      SRCI,SRCJ,SRCK,
+                                      &SRCidx,&SRCidx_NI,&SRCidx_NJ,
+                                      OPENST_FSM3D_INIT_DEFAULT);
+
+        printf("\n====================================================\n");
+        printf("IT,sec,MRE,L_inf(Full),EPS_MULT,L_inf(Prev),Umin,Umean,Umax\n");
+
+        it = 0;
+        EIK3D_Time = 0.0;
+        for(it = 0; it < max_iter;){
+            memcpy(Uprev,Upart,sizeof(double) * NI * NJ * NK);
+
+            t1 = omp_get_wtime();
+            it = OpenST_LSM3D_ComputePartial(Upart,LSM_UNLOCKED,V,
+                                             NI,NJ,NK,
+                                             HI,HJ,HK,
+                                             it,it+1,&converged,
+                                             BSIZE_I,BSIZE_J,BSIZE_K,EPS);
+            t2 = omp_get_wtime();
+            EIK3D_Time = EIK3D_Time + t2 - t1;
+
+            ex_check(U, Upart, Uprev, NI, NJ, NK, &Umin, &Umax, &Umean,
+                     &LinfI, &LinfF, &MRE);
+
+            printf("%i,%e,%e,%e,%e,%e,%e,%e,%e\n",it,EIK3D_Time,MRE,LinfF,LinfI/ref_time,LinfI,Umin,Umean,Umax);
+
+            if(converged)
+                break;
+        }
+    }
 
 EXIT:
     return errcode;

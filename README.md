@@ -2,21 +2,24 @@
 
 [![License (3-Clause BSD)](https://img.shields.io/badge/license-BSD%203--Clause-brightgreen.svg)](https://github.com/aanikitin/seis-eikonal/blob/master/LICENSE)
 
-**work in progress, not for production use**
+**work in progress**
 
-Eikonal equation solver for calculating first-arrival traveltimes of seismic 
-waves currently based on parallel implementation of the FSM algorithm. Two new 
-implementations are proposed for shared memory architectures based on 3D grid 
-decomposition into tasks to achieve high performance. One based on static 
-assignment of tasks to threads using manual scheduling. The other is using task 
-depend clause introduced in OpenMP 4.0 to avoid the need for global 
-synchronization of task execution. Preliminary testing demonstrates that both 
-approaches show similar performance under light system load, with the later 
-approach becoming faster during increased system load.
+Eikonal equation solver for calculating first-arrival travel times of seismic 
+waves based on the proposed parallel block sweeping methods. These methods are 
+based on domain decomposition approach to increase the efficiency of CPU cache 
+use. This allows us to achieve high parallel implementation efficiency of 
+85-95% (as tested on up to 12 CPU cores). For more information, see conference 
+abstract [1], extended paper currently submitted for publication.
 
-We are currently preparing an article with detailed 
-description of the proposed algorithms and in-depth testing, and are planning 
-to submit it for review and publication in the first half of 2016.
+Recommended build environment is Linux (e.g. Ubuntu 16.04) with a C compiler 
+that supports OpenMP 4.0 standard, such as gcc 4.9.0 and higher, and CMake 
+3.6.2 and higher. To build the library and test programs, use compile.sh script 
+in the project's root directory.
+
+This is a work in progress, the library will be updated in the future to 
+improve its interface and performance and to add documentation and new 
+functionality. Latest versions are available at 
+https://github.com/aanikitin/seis-eikonal.
 
 Authors:<br />
 Alexandr Nikitin -  PhD student, junior researcher, IPGG SB RAS - parallel 

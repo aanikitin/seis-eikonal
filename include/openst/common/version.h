@@ -8,8 +8,8 @@ extern "C" {
 #include "openst/common/macros.h"
 
 #define OPENST_VERSION_STABLE 0
-#define OPENST_VERSION_MAJOR 0
-#define OPENST_VERSION_MINOR 2
+#define OPENST_VERSION_MAJOR 1
+#define OPENST_VERSION_MINOR 0
 #define OPENST_VERSION_PATCH 0
 
 OPENST_API extern const int OPENST_VERSION_STABLE_STATIC;

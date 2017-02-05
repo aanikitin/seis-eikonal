@@ -36,7 +36,7 @@ void OpenST_FSM3D_SuggestBlockSize(size_t NI, size_t NJ, size_t NK,
                                    size_t *BSIZE_K){
     /* TODO: heuristic to determine optimal block size
      * (based on profiling maybe) */
-    *BSIZE_I = 2;
+    *BSIZE_I = 1;
     *BSIZE_J = 10;
     *BSIZE_K = NK;
 }

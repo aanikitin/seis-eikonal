@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 # clean build dirs
 rm -rf bin
 rm -rf build

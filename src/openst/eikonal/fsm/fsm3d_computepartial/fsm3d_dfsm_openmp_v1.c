@@ -1,6 +1,6 @@
 #include "openst/eikonal/fsm.h"
 
-#define M_FSM3D_IMP_NAME "fsm3d_dfsm_openmp_v1.c"
+#define M_FSM3D_IMP_NAME "DFSM"
 
 
 const char OPENST_FSM3D_COMPUTEPARTIAL_IMP_NAME[] = M_FSM3D_IMP_NAME;

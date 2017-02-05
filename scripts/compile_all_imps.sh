@@ -1,7 +1,11 @@
 #!/bin/sh
-cd ..
+# script used to compile all implementations
+
+# exit on first error
+set -e
 
 # clean build dirs
+cd ..
 rm -rf build
 rm -rf lib
 mkdir build
@@ -13,7 +17,8 @@ do
 for f2 in `find ../src/openst/eikonal/fsm/fsm3d_blockserial -type f -name "*.c" -printf "%f\n"`
 do
 printf "\n\n=== BUILDING: $f/${f2} ===\n"
-cmake -DGCC_LTO:BOOL=ON -DFSM3D_IMP="$f" -DFSM3D_BLOCKSERIAL_IMP="${f2}" -DOPENST_PATH_LIB_SUFFIX="$f/${f2}" ..
+rm -rf *
+cmake -DGCC_LTO:BOOL=ON -DTEST_FSM= -DFSM3D_IMP="$f" -DFSM3D_BLOCKSERIAL_IMP="${f2}" -DOPENST_PATH_SUFFIX="$f/${f2}" ..
 make
 done
 done
@@ -25,7 +30,8 @@ do
 for f2 in `find ../src/openst/eikonal/lsm/lsm3d_blockserial -type f -name "*.c" -printf "%f\n"`
 do
 printf "\n\n=== BUILDING: $f/${f2} ===\n"
-cmake -DGCC_LTO:BOOL=ON -DLSM3D_IMP="$f" -DLSM3D_BLOCKSERIAL_IMP="${f2}" -DOPENST_PATH_LIB_SUFFIX="$f/${f2}" ..
+rm -rf *
+cmake -DGCC_LTO:BOOL=ON -DLSM3D_IMP="${f}" -DLSM3D_BLOCKSERIAL_IMP="${f2}" -DOPENST_PATH_SUFFIX="${f}/${f2}" ..
 make
 done
 done
