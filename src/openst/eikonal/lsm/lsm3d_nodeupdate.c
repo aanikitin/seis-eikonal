@@ -1,7 +1,7 @@
 #include "openst/eikonal/lsm.h"
 
 
-inline int OpenST_LSM3D_NodeUpdate_1H(double *U, char *LSM_UNLOCKED, double *V,
+int OpenST_LSM3D_NodeUpdate_1H(double *U, char *LSM_UNLOCKED, double *V,
                                size_t NI, size_t NJ, size_t NK,
                                double H,
                                int REVI, int REVJ, int REVK,
@@ -175,7 +175,7 @@ inline int OpenST_LSM3D_NodeUpdate_1H(double *U, char *LSM_UNLOCKED, double *V,
 }
 
 
-inline int OpenST_LSM3D_NodeUpdate(double *U, char *LSM_UNLOCKED, double *V,
+int OpenST_LSM3D_NodeUpdate(double *U, char *LSM_UNLOCKED, double *V,
                             size_t NI, size_t NJ, size_t NK,
                             double HI, double HJ, double HK,
                             int REVI, int REVJ, int REVK,

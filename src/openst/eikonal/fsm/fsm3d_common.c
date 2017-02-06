@@ -42,7 +42,7 @@ void OpenST_FSM3D_SuggestBlockSize(size_t NI, size_t NJ, size_t NK,
 }
 
 
-inline void OpenST_FSM3D_GetSweepOrder(int it, int *REVI, int *REVJ, int *REVK){
+void OpenST_FSM3D_GetSweepOrder(int it, int *REVI, int *REVJ, int *REVK){
     int order = it % 8;
     if(order & 4){
         *REVI = 1;

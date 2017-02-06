@@ -8,7 +8,7 @@ Eikonal equation solver for calculating first-arrival travel times of seismic
 waves based on the proposed parallel block sweeping methods. These methods are 
 based on domain decomposition approach to increase the efficiency of CPU cache 
 use. This allows us to achieve high parallel implementation efficiency of 
-85-95% (as tested on up to 12 CPU cores). For more information, see conference 
+85-95% (as tested on up to 12 CPU cores). For more information see conference 
 abstract [1], extended paper currently submitted for publication.
 
 Recommended build environment is Linux (e.g. Ubuntu 16.04) with a C compiler 
@@ -35,3 +35,5 @@ href="http://elibrary.ru/item.asp?id=25994951">Optimization of parallel
 sweeping methods of numerical computation of seismic wave travel times for 
 shared memory computing systems</a> // ИНТЕРЭКСПО 
 ГЕО-СИБИРЬ. – 2016. – V. 2. – N. 1. – P. 241-245.<br />
+
+Last change: 2017-02-07

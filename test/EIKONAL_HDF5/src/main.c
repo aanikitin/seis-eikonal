@@ -258,10 +258,10 @@ int main(int argc, char *argv[]){
 #ifdef _MSC_VER
     printf("%s,%s,%s,%i,%Iu,%Iu,%Iu,%e,%i,%i,%i,%e," \
            "%Iu,%Iu,%Iu,%e,%e,%e,%s\n",
-       #else
+#else
     printf("%s,%s,%s,%i,%zu,%zu,%zu,%e,%i,%i,%i,%e," \
            "%zu,%zu,%zu,%e,%e,%e,%s\n",
-       #endif
+#endif
            FILE_IN,IMP_NAME,IMP_BLOCKSERIAL_NAME,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K,
            EPS,max_iter,it,converged,EIK3D_Time,
            NI,NJ,NK,SRCI,SRCJ,SRCK,OPENST_BUILDINFO_LINK_TYPE_STATIC

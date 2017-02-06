@@ -52,7 +52,7 @@ void OpenST_INTERP_Trilinear(double *A, size_t NI, size_t NJ, size_t NK,
 }
 
 
-inline void OpenST_INTERP_Linear_Formula(double *f,
+void OpenST_INTERP_Linear_Formula(double *f,
                                  double i,
                                  double f0, double f1,
                                  double i0, double i1){
@@ -64,7 +64,7 @@ inline void OpenST_INTERP_Linear_Formula(double *f,
 }
 
 
-inline void OpenST_INTERP_Bilinear_Formula(double *f,
+void OpenST_INTERP_Bilinear_Formula(double *f,
                                    double i, double j,
                                    double f00, double f01,
                                    double f10, double f11,
@@ -89,7 +89,7 @@ inline void OpenST_INTERP_Bilinear_Formula(double *f,
 }
 
 
-inline void OpenST_INTERP_Trilinear_Formula(double *f,
+void OpenST_INTERP_Trilinear_Formula(double *f,
                                     double i, double j, double k,
                                     double f000, double f001,
                                     double f010, double f011,

@@ -1,7 +1,7 @@
 #include "openst/eikonal/fsm.h"
 
 
-inline int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
+int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
                                size_t NI, size_t NJ, size_t NK,
                                double H,
                                int REVI, int REVJ, int REVK,
@@ -120,7 +120,7 @@ inline int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
 }
 
 
-inline int OpenST_FSM3D_NodeUpdate(double *U, double *V,
+int OpenST_FSM3D_NodeUpdate(double *U, double *V,
                             size_t NI, size_t NJ, size_t NK,
                             double HI, double HJ, double HK,
                             int REVI, int REVJ, int REVK,
