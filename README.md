@@ -1,6 +1,7 @@
 # SEIS-EIKONAL
 
 [![License (3-Clause BSD)](https://img.shields.io/badge/license-BSD%203--Clause-brightgreen.svg)](https://github.com/aanikitin/seis-eikonal/blob/master/LICENSE)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.269001.svg)](https://doi.org/10.5281/zenodo.269001)
 
 **work in progress**
 
@@ -36,4 +37,4 @@ sweeping methods of numerical computation of seismic wave travel times for
 shared memory computing systems</a> // ИНТЕРЭКСПО 
 ГЕО-СИБИРЬ. – 2016. – V. 2. – N. 1. – P. 241-245.<br />
 
-Last change: 2017-02-07
+Last change: 2017-03-07
