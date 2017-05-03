@@ -4,7 +4,9 @@
 #include "matrix.h"
 #include "OpenST_MEX.h"
 #include "openst.h"
+
 #include <stdlib.h>
+#include <Windows.h>
 
 void mexFunction(int nlhs, mxArray *plhs[],
         int nrhs, const mxArray *prhs[])
@@ -33,10 +35,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
     size_t RAY_NI, RAY_NJ;
     mwSize RAY_dims[2];
     
+    LARGE_INTEGER frequency;
+    LARGE_INTEGER start;
+    LARGE_INTEGER end;
+    double elapsedSeconds;
+    QueryPerformanceFrequency(&frequency);
+    
     OPENST_MEX_CHECK((nrhs < 7), "Not enough input arguments.");
     OPENST_MEX_CHECK((nrhs > 7), "Too many input arguments.");
-    OPENST_MEX_CHECK((nlhs < 1), "Not enough output arguments.");
-    OPENST_MEX_CHECK((nlhs > 1), "Too many output arguments.");
+    OPENST_MEX_CHECK((nlhs < 2), "Not enough output arguments.");
+    OPENST_MEX_CHECK((nlhs > 2), "Too many output arguments.");
     
     OPENST_MEX_CHECK((OPENST_MEX_GetDoubleArray(prhs[0], &T,
             &T_ndims, &T_dims)), NULL);
@@ -86,11 +94,14 @@ void mexFunction(int nlhs, mxArray *plhs[],
     RCVI = RCV[0];
     RCVJ = RCV[1];
     RCVK = RCV[2];
-        
+    
+    QueryPerformanceCounter(&start);
     OPENST_MEX_CHECK((OpenST_BRT3D_Trace(T, V,
             NI, NJ, NK, HI, HJ, HK, TSTEP,
             RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK, (size_t) MAX_SEG,
             &RAY, &RAY_NI, &RAY_NJ)), "OpenST_BRT3D Error");
+    QueryPerformanceCounter(&end);
+    elapsedSeconds = (end.QuadPart - start.QuadPart) / (double)frequency.QuadPart;
     
     RAY_dims[0] = RAY_NJ;
     RAY_dims[1] = RAY_NI;
@@ -99,6 +110,9 @@ void mexFunction(int nlhs, mxArray *plhs[],
             mxCreateNumericArray(2, RAY_dims, mxDOUBLE_CLASS,
             mxREAL)) == NULL), NULL);
     OPENST_MEX_CHECK(((RAYout = mxGetPr(plhs[0])) == NULL), NULL);
+    
+    OPENST_MEX_CHECK(((plhs[1] =
+            mxCreateDoubleScalar((double) elapsedSeconds)) == NULL), NULL);
     
     memcpy(RAYout, RAY, RAY_NI * RAY_NJ * sizeof(double));
     

@@ -1,4 +1,4 @@
-function RAY = OpenST_BRT3D(T,V,H,TSTEP,RCV,SRC,varargin)
+function [RAY,varargout] = OpenST_BRT3D(T,V,H,TSTEP,RCV,SRC,varargin)
 %OpenST_BRT3D Perform back ray tracing for the source-receiver pair.
 %
 %   Visit https://github.com/aanikitin/seis-eikonal for latest version.
@@ -15,7 +15,11 @@ end;
 
 T = permute(T, [3 2 1]);
 V = permute(V, [3 2 1]);
-RAY = OpenST_BRT3D_mex(T,V,H,TSTEP,RCV,SRC,MAX_SEG);
+[RAY,COMPTIME] = OpenST_BRT3D_mex(T,V,H,TSTEP,RCV,SRC,MAX_SEG);
 RAY = permute(RAY, [2 1]);
+
+if nargout > 1
+    varargout{1} = COMPTIME;
+end;
 
 end

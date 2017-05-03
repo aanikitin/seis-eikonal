@@ -5,6 +5,8 @@
 #include "OpenST_MEX.h"
 #include "openst.h"
 
+#include <Windows.h>
+
 void mexFunction(int nlhs, mxArray *plhs[],
         int nrhs, const mxArray *prhs[])
 {
@@ -24,10 +26,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
     size_t NI, NJ, NK;
     double SRCI, SRCJ, SRCK, HI, HJ, HK;
     
+    LARGE_INTEGER frequency;
+    LARGE_INTEGER start;
+    LARGE_INTEGER end;
+    double elapsedSeconds;
+    QueryPerformanceFrequency(&frequency);
+    
     OPENST_MEX_CHECK((nrhs < 5), "Not enough input arguments.");
     OPENST_MEX_CHECK((nrhs > 5), "Too many input arguments.");
-    OPENST_MEX_CHECK((nlhs < 3), "Not enough output arguments.");
-    OPENST_MEX_CHECK((nlhs > 3), "Too many output arguments.");
+    OPENST_MEX_CHECK((nlhs < 4), "Not enough output arguments.");
+    OPENST_MEX_CHECK((nlhs > 4), "Too many output arguments.");
     
     OPENST_MEX_CHECK((OPENST_MEX_GetDoubleArray(prhs[0], &V,
             &V_ndims, &V_dims)), NULL);
@@ -69,6 +77,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     OPENST_MEX_CHECK(((LSM_UNLOCKED = mxMalloc(NI * NJ * NK *
             sizeof(double))) == NULL), NULL);
     
+    QueryPerformanceCounter(&start);
     OPENST_MEX_CHECK(((OpenST_LSM3D(U, LSM_UNLOCKED, V,
             NI, NJ, NK,
             HI, HJ, HK,
@@ -76,12 +85,17 @@ void mexFunction(int nlhs, mxArray *plhs[],
             EPS, (int) MAX_ITER,
             &it, &converged)
             != OPENST_ERR_SUCCESS)), "OpenST_LSM3D Error");
+    QueryPerformanceCounter(&end);
+    elapsedSeconds = (end.QuadPart - start.QuadPart) / (double)frequency.QuadPart;
     
     OPENST_MEX_CHECK(((plhs[1] =
             mxCreateDoubleScalar((double) converged)) == NULL), NULL);
     
     OPENST_MEX_CHECK(((plhs[2] =
             mxCreateDoubleScalar((double) it)) == NULL), NULL);
+    
+    OPENST_MEX_CHECK(((plhs[3] =
+            mxCreateDoubleScalar((double) elapsedSeconds)) == NULL), NULL);
     
     mxFree(LSM_UNLOCKED);
     

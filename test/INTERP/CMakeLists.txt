@@ -1,0 +1,10 @@
+set(INTERP_SRC src/main.c)
+add_executable(INTERP ${INTERP_SRC})
+if(WIN32)
+    target_link_libraries(INTERP OPENST_SHARED)
+    target_compile_definitions(INTERP PRIVATE -DOPENST_LINK_SHARED)
+else()
+    target_link_libraries(INTERP OPENST_STATIC)
+endif()
+
+add_test(NAME INTERP COMMAND $<TARGET_FILE:INTERP>)

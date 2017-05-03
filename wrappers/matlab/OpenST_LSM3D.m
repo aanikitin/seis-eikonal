@@ -25,6 +25,10 @@ function [U,varargout] = OpenST_LSM3D(V,SRC,varargin)
 %   [U,C,IT] = OpenST_LSM3D(...) returns the number of iterations 
 %   completed in IT.
 %
+%   [U,C,IT,COMPTIME] = OpenST_LSM3D(...) returns computation time in
+%   seconds (C computation function run time only, without MEX-related 
+%   processing).
+%
 %   Visit https://github.com/aanikitin/seis-eikonal for latest version.
 %
 %   See also OpenST_MEX_Compile, OpenST_BRT3D.
@@ -50,7 +54,7 @@ else
 end;
 
 V = permute(V, [3 2 1]);
-[U,C,IT] = OpenST_LSM3D_mex(V,SRC,H,EPS,MAX_ITER);
+[U,C,IT,COMPTIME] = OpenST_LSM3D_mex(V,SRC,H,EPS,MAX_ITER);
 U = permute(U, [3 2 1]);
 
 if nargout > 1
@@ -59,6 +63,10 @@ end;
 
 if nargout > 2
     varargout{2} = IT;
+end;
+
+if nargout > 3
+    varargout{3} = COMPTIME;
 end;
 
 end

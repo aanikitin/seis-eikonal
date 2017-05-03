@@ -51,10 +51,11 @@ void *OpenST_DYNARR_At(struct OpenST_DYNARR *arr, size_t i){
 
 
 void *OpenST_DYNARR_Pushback(struct OpenST_DYNARR *arr, void *element){
+  void *dest;
   if(arr->num == arr->capacity){
     if(OpenST_DYNARR_Grow(arr) == NULL) return NULL;
   }
-  void *dest = OpenST_DYNARR_At(arr, arr->num);
+  dest = OpenST_DYNARR_At(arr, arr->num);
   memcpy(dest, element, arr->element_size);
   ++(arr->num);
   return dest;

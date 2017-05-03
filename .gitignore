@@ -3,6 +3,8 @@
 *
 # but not project subdirs
 !*/
+# except build subdir
+build
 # and files such as
 !.gitignore
 !.gitattributes
