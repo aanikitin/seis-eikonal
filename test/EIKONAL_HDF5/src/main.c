@@ -10,41 +10,41 @@
 
 #define TEST_ID "EIKONAL_HDF5"
 
-#define DEFAULT_SRC 0.5
+#define DEFAULT_SRC OPENST_FLOAT_0_5
 #define DEFAULT_MAX_ITER 1000
-#define DEFAULT_EPS_MULT 1.0
+#define DEFAULT_EPS_MULT OPENST_FLOAT_1_0
 #define DEFAULT_V_DATASET_NAME "V"
 #define DEFAULT_CONV_TEST 0
 
-void ex_check(double *U, double *Upart, double *Uprev,
+void ex_check(OPENST_FLOAT *U, OPENST_FLOAT *Upart, OPENST_FLOAT *Uprev,
               size_t NI, size_t NJ, size_t NK,
-              double *Umin, double *Umax, double *Umean,
-              double *LinfI, double *LinfF, double *MRE){
+              OPENST_FLOAT *Umin, OPENST_FLOAT *Umax, OPENST_FLOAT *Umean,
+              OPENST_FLOAT *LinfI, OPENST_FLOAT *LinfF, OPENST_FLOAT *MRE){
 
     size_t i, j, k, NN;
-    double uval, umin, umax, umean;
-    double diffI, diffF, linfI, linfF, mre;
-    mre = -INFINITY;
-    linfI = -INFINITY;
-    linfF = -INFINITY;
-    umin = INFINITY;
-    umax = -INFINITY;
-    umean = 0.0;
+    OPENST_FLOAT uval, umin, umax, umean;
+    OPENST_FLOAT diffI, diffF, linfI, linfF, mre;
+    mre = -OPENST_FLOAT_INF;
+    linfI = -OPENST_FLOAT_INF;
+    linfF = -OPENST_FLOAT_INF;
+    umin = OPENST_FLOAT_INF;
+    umax = -OPENST_FLOAT_INF;
+    umean = OPENST_FLOAT_0_0;
     NN = NI * NJ * NK;
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
             for(k = 0; k < NK; ++k){
                 uval = Upart[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)];
-                umin = fmin(umin,uval);
-                umax = fmax(umax,uval);
+                umin = OPENST_FLOAT_FMIN(umin,uval);
+                umax = OPENST_FLOAT_FMAX(umax,uval);
                 umean += uval;
                 diffI = Upart[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] - Uprev[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)];
                 diffF = Upart[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] - U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)];
 
-                linfI = fmax(linfI,fabs(diffI));
-                linfF = fmax(linfF,fabs(diffF));
+                linfI = OPENST_FLOAT_FMAX(linfI,OPENST_FLOAT_FABS(diffI));
+                linfF = OPENST_FLOAT_FMAX(linfF,OPENST_FLOAT_FABS(diffF));
 
-                mre = fmax(mre, fabs(diffF) / U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] * 100);
+                mre = OPENST_FLOAT_FMAX(mre, OPENST_FLOAT_FABS(diffF) / U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] * 100);
             }
         }
     }
@@ -53,7 +53,7 @@ void ex_check(double *U, double *Upart, double *Uprev,
     *MRE = mre;
     *Umin = umin;
     *Umax = umax;
-    *Umean = umean/(double)NN;
+    *Umean = umean/(OPENST_FLOAT)NN;
 }
 
 void app_info(char *BIN_NAME,int usage){
@@ -81,25 +81,25 @@ int main(int argc, char *argv[]){
 
     OPENST_ERR errcode;
     char *FILE_IN, *FILE_OUT, *V_DATASET_NAME;
-    double *U, *Upart, *Uprev, *V, vmin, vmean,vmax, HI, HJ, HK;
+    OPENST_FLOAT *U, *Upart, *Uprev, *V, vmin, vmean,vmax, HI, HJ, HK;
     int max_iter;
     int it, converged;
     double t1,t2;
     size_t NI, NJ, NK;
-    double SRCI, SRCJ, SRCK;
+    OPENST_FLOAT SRCI, SRCJ, SRCK;
     size_t BSIZE_I;
     size_t BSIZE_J;
     size_t BSIZE_K;
     char *LSM_UNLOCKED;
     int OMP_MAX_THREADS;
-    double EPS, EPS_MULT, EIK3D_Time;
+    OPENST_FLOAT EPS, EPS_MULT, EIK3D_Time;
     const char *IMP_NAME, *IMP_BLOCKSERIAL_NAME;
     size_t SRCidx_i, i, j, k;
     size_t *SRCidx, SRCidx_NI, SRCidx_NJ;
-    double Umin, Umax, Umean;
-    double LinfI, LinfF, MRE;
+    OPENST_FLOAT Umin, Umax, Umean;
+    OPENST_FLOAT LinfI, LinfF, MRE;
     int conv_test;
-    double ref_time;
+    OPENST_FLOAT ref_time;
 
     if(argc < 6){
         fprintf(stderr,"Error: invalid command line parameters\n");
@@ -137,7 +137,11 @@ int main(int argc, char *argv[]){
         max_iter = DEFAULT_MAX_ITER;
     }
 
-    hdf5_read_model(FILE_IN,V_DATASET_NAME,&V,&HI,&HJ,&HK,&NI,&NJ,&NK);
+#ifdef OPENST_FLOAT_PRECISION_SINGLE
+    hdf5_read_model_float(FILE_IN,V_DATASET_NAME,&V,&HI,&HJ,&HK,&NI,&NJ,&NK);
+#else
+    hdf5_read_model_double(FILE_IN,V_DATASET_NAME,&V,&HI,&HJ,&HK,&NI,&NJ,&NK);
+#endif
 
 #ifdef _MSC_VER
     printf("NI = %Iu; NJ = %Iu; NK = %Iu\n",NI,NJ,NK);
@@ -149,6 +153,17 @@ int main(int argc, char *argv[]){
     printf("V[0,0,1]: %e\n",V[OPENST_MEMADR_3D(0,0,1,NI,NJ,NK)]);
     printf("V[0,1,0]: %e\n",V[OPENST_MEMADR_3D(0,1,0,NI,NJ,NK)]);
     printf("V[1,0,0]: %e\n",V[OPENST_MEMADR_3D(1,0,0,NI,NJ,NK)]);
+#ifdef _MSC_VER
+    printf("V[%Iu,%Iu,%Iu]: %e\n",NI-1,NJ-1,NK-1,V[OPENST_MEMADR_3D(NI-1,NJ-1,NK-1,NI,NJ,NK)]);
+    printf("V[%Iu,%Iu,%Iu]: %e\n",NI-1,NJ-1,NK-2,V[OPENST_MEMADR_3D(NI-1,NJ-1,NK-2,NI,NJ,NK)]);
+    printf("V[%Iu,%Iu,%Iu]: %e\n",NI-1,NJ-2,NK-1,V[OPENST_MEMADR_3D(NI-1,NJ-2,NK-1,NI,NJ,NK)]);
+    printf("V[%Iu,%Iu,%Iu]: %e\n",NI-2,NJ-1,NK-1,V[OPENST_MEMADR_3D(NI-2,NJ-1,NK-1,NI,NJ,NK)]);
+#else
+    printf("V[%zu,%zu,%zu]: %e\n",NI-1,NJ-1,NK-1,V[OPENST_MEMADR_3D(NI-1,NJ-1,NK-1,NI,NJ,NK)]);
+    printf("V[%zu,%zu,%zu]: %e\n",NI-1,NJ-1,NK-2,V[OPENST_MEMADR_3D(NI-1,NJ-1,NK-2,NI,NJ,NK)]);
+    printf("V[%zu,%zu,%zu]: %e\n",NI-1,NJ-2,NK-1,V[OPENST_MEMADR_3D(NI-1,NJ-2,NK-1,NI,NJ,NK)]);
+    printf("V[%zu,%zu,%zu]: %e\n",NI-2,NJ-1,NK-1,V[OPENST_MEMADR_3D(NI-2,NJ-1,NK-1,NI,NJ,NK)]);
+#endif
 
     if(OpenST_CRS_IsPointNotWithinBounds(SRCI,SRCJ,SRCK,NI,NJ,NK,HI,HJ,HK)){
         fprintf(stderr,"Error: SRC is not within domain bounds\n");
@@ -170,11 +185,11 @@ int main(int argc, char *argv[]){
         conv_test = DEFAULT_CONV_TEST;
     }
 
-    U = (double *)malloc(NI * NJ * NK * sizeof(double));
+    U = (OPENST_FLOAT *)malloc(NI * NJ * NK * sizeof(OPENST_FLOAT));
     assert(U);
-    Upart = (double *)malloc(NI * NJ * NK * sizeof(double));
+    Upart = (OPENST_FLOAT *)malloc(NI * NJ * NK * sizeof(OPENST_FLOAT));
     assert(Upart);
-    Uprev = (double *)malloc(NI * NJ * NK * sizeof(double));
+    Uprev = (OPENST_FLOAT *)malloc(NI * NJ * NK * sizeof(OPENST_FLOAT));
     assert(Uprev);
     LSM_UNLOCKED = (char *)malloc(NI * NJ * NK * sizeof(char));
     assert(LSM_UNLOCKED);
@@ -183,12 +198,12 @@ int main(int argc, char *argv[]){
 
     OpenST_AOP_GetArrStats(V, NI * NJ * NK, &vmin, &vmax, &vmean);
     printf("Vmin = %e; Vmean = %e; Vmax = %e\n",vmin,vmean,vmax);
-    ref_time = fmin(HI, (fmin(HJ, HK))) / vmax;
+    ref_time = OPENST_FLOAT_FMIN(HI, (OPENST_FLOAT_FMIN(HJ, HK))) / vmax;
 
-    if(EPS_MULT != 0.0){
+    if(EPS_MULT != OPENST_FLOAT_0_0){
         EPS = EPS_MULT * OpenST_BRT3D_SuggestTSTEP(vmax, HI, HJ, HK);
     } else {
-        EPS = 0.0;
+        EPS = OPENST_FLOAT_0_0;
     }
 
     t1 = omp_get_wtime();
@@ -248,7 +263,11 @@ int main(int argc, char *argv[]){
     t2 = omp_get_wtime();
     EIK3D_Time = t2 - t1;
 
-    hdf5_write_time(FILE_OUT,"T",U,&HI,&HJ,&HK,NI,NJ,NK);
+#ifdef OPENST_FLOAT_PRECISION_SINGLE
+    hdf5_write_time_float(FILE_OUT,"T",U,&HI,&HJ,&HK,NI,NJ,NK);
+#else
+    hdf5_write_time_double(FILE_OUT,"T",U,&HI,&HJ,&HK,NI,NJ,NK);
+#endif
 
     printf("\n====================================================\n");
     printf("TEST_ID,IMP_ID,BLOCK_IMP_ID,OMP_MAX_THREADS,BSIZE_I,BSIZE_J,BSIZE_K," \
@@ -279,9 +298,9 @@ int main(int argc, char *argv[]){
         printf("IT,sec,MRE,L_inf(Full),EPS_MULT,L_inf(Prev),Umin,Umean,Umax\n");
 
         it = 0;
-        EIK3D_Time = 0.0;
+        EIK3D_Time = OPENST_FLOAT_0_0;
         for(it = 0; it < max_iter;){
-            memcpy(Uprev,Upart,sizeof(double) * NI * NJ * NK);
+            memcpy(Uprev,Upart,sizeof(OPENST_FLOAT) * NI * NJ * NK);
 
             t1 = omp_get_wtime();
             it = OpenST_LSM3D_ComputePartial(Upart,LSM_UNLOCKED,V,

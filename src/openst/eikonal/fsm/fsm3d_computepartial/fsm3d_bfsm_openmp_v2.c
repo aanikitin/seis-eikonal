@@ -12,12 +12,12 @@ const size_t OPENST_FSM3D_COMPUTEPARTIAL_IMP_NAME_LENGTH = sizeof(M_FSM3D_IMP_NA
 
 sem_t *sem;
 
-int OpenST_FSM3D_ComputePartial(double *U, double *V,
+int OpenST_FSM3D_ComputePartial(OPENST_FLOAT *U, OPENST_FLOAT *V,
                                 size_t NI, size_t NJ, size_t NK,
-                                double HI, double HJ, double HK,
+                                OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
                                 int start_iter, int max_iter, int *converged,
                                 size_t BSIZE_I, size_t BSIZE_J, size_t BSIZE_K,
-                                double EPS){
+                                OPENST_FLOAT EPS){
 
     int total_it, it, notconvergedl;
     int REVI, REVJ, REVK;

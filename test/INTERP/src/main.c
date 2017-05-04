@@ -9,21 +9,21 @@
 
 #define TEST_ID "INTERP"
 
-#define DEFAULT_DOMAIN_SIZE 1.0
+#define DEFAULT_DOMAIN_SIZE OPENST_FLOAT_1_0
 #define DEFAULT_GRID_SIZE 2u
 
 
-void ex_init(double *V, double HI, double HJ, double HK, size_t NI, size_t NJ, size_t NK){
+void ex_init(OPENST_FLOAT *V, OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK, size_t NI, size_t NJ, size_t NK){
     size_t i, j, k;
-    double PI,PJ,PK;
+    OPENST_FLOAT PI,PJ,PK;
     printf("Input array:\nCOORD,VALUE\n");
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
             for(k = 0; k < NK; ++k){
-                PI = (double)i * HI;
-                PJ = (double)j * HJ;
-                PK = (double)k * HK;
-                V[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = (double)OPENST_MEMADR_3D(i,j,k,NI,NJ,NK);
+                PI = (OPENST_FLOAT)i * HI;
+                PJ = (OPENST_FLOAT)j * HJ;
+                PK = (OPENST_FLOAT)k * HK;
+                V[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = (OPENST_FLOAT)OPENST_MEMADR_3D(i,j,k,NI,NJ,NK);
                 printf("[%e,%e,%e],%e\n",PI,PJ,PK,V[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)]);
             }
         }
@@ -50,9 +50,10 @@ void app_info(char *BIN_NAME,int usage){
 int main(int argc, char *argv[]){
 
     OPENST_ERR errcode;
-    double *V;
+    OPENST_FLOAT *V;
     size_t NI, NJ, NK, i, j, k;
-    double HI, HJ, HK, PI, PJ, PK, value, t1, t2;
+    OPENST_FLOAT HI, HJ, HK, PI, PJ, PK, value;
+    double t1, t2;
 
     NI = DEFAULT_GRID_SIZE;
     NJ = DEFAULT_GRID_SIZE;
@@ -60,12 +61,12 @@ int main(int argc, char *argv[]){
 
     app_info(argv[0],0);
 
-    V = (double *)malloc(NI * NJ * NK * sizeof(double));
+    V = (OPENST_FLOAT *)malloc(NI * NJ * NK * sizeof(OPENST_FLOAT));
     assert(V);
 
-    HI = DEFAULT_DOMAIN_SIZE / (double)(NI - 1);
-    HJ = DEFAULT_DOMAIN_SIZE / (double)(NJ - 1);
-    HK = DEFAULT_DOMAIN_SIZE / (double)(NK - 1);
+    HI = DEFAULT_DOMAIN_SIZE / (OPENST_FLOAT)(NI - 1);
+    HJ = DEFAULT_DOMAIN_SIZE / (OPENST_FLOAT)(NJ - 1);
+    HK = DEFAULT_DOMAIN_SIZE / (OPENST_FLOAT)(NK - 1);
 
     ex_init(V,HI,HJ,HK,NI,NJ,NK);
 
@@ -75,9 +76,9 @@ int main(int argc, char *argv[]){
     for(i = 0; i < (2 * NI - 1); ++i){
         for(j = 0; j < (2 * NJ - 1); ++j){
             for(k = 0; k < (2 * NK - 1); ++k){
-                PI = (double)i * HI/2.0;
-                PJ = (double)j * HJ/2.0;
-                PK = (double)k * HK/2.0;
+                PI = (OPENST_FLOAT)i * HI/OPENST_FLOAT_2_0;
+                PJ = (OPENST_FLOAT)j * HJ/OPENST_FLOAT_2_0;
+                PK = (OPENST_FLOAT)k * HK/OPENST_FLOAT_2_0;
                 t1 = omp_get_wtime();
                 errcode = OpenST_INTERP_3D(V,NI,NJ,NK,HI,HJ,HK,PI,PJ,PK,&value);
                 t2 = omp_get_wtime();

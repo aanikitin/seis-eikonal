@@ -10,10 +10,10 @@ extern "C" {
 #include <math.h>
 #include <float.h>
 
+#include "openst/common/float.h"
 #include "openst/common/macros.h"
 #include "openst/common/memadr.h"
 #include "openst/common/error.h"
-#include "openst/common/float.h"
 #include "openst/common/coordsys.h"
 
 typedef enum OPENST_INTERP_METHOD_enum{
@@ -21,54 +21,54 @@ typedef enum OPENST_INTERP_METHOD_enum{
     OPENST_INTERP_DEFAULT = OPENST_INTERP_LINEAR
 } OPENST_INTERP_METHOD;
 
-OPENST_API OPENST_ERR OpenST_INTERP_3D(double *A,
+OPENST_API OPENST_ERR OpenST_INTERP_3D(OPENST_FLOAT *A,
                               size_t NI, size_t NJ, size_t NK,
-                              double HI, double HJ, double HK,
-                              double PI, double PJ, double PK,
-                              double *VAL);
+                              OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                              OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
+                              OPENST_FLOAT *VAL);
 
-OPENST_API void OpenST_INTERP_Trilinear(double *A,
+OPENST_API void OpenST_INTERP_Trilinear(OPENST_FLOAT *A,
                              size_t NI, size_t NJ, size_t NK,
-                             double HI, double HJ, double HK,
-                             double PI, double PJ, double PK,
-                             double *VAL);
+                             OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                             OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
+                             OPENST_FLOAT *VAL);
 
-OPENST_API void OpenST_INTERP_Linear_Formula(double *f,
-                                    double i,
-                                    double f0, double f1,
-                                    double i0, double i1);
+OPENST_API void OpenST_INTERP_Linear_Formula(OPENST_FLOAT *f,
+                                    OPENST_FLOAT i,
+                                    OPENST_FLOAT f0, OPENST_FLOAT f1,
+                                    OPENST_FLOAT i0, OPENST_FLOAT i1);
 
-OPENST_API void OpenST_INTERP_Bilinear_Formula(double *f,
-                                      double i, double j,
-                                      double f00, double f01,
-                                      double f10, double f11,
-                                      double i0, double j0,
-                                      double i1, double j1);
+OPENST_API void OpenST_INTERP_Bilinear_Formula(OPENST_FLOAT *f,
+                                      OPENST_FLOAT i, OPENST_FLOAT j,
+                                      OPENST_FLOAT f00, OPENST_FLOAT f01,
+                                      OPENST_FLOAT f10, OPENST_FLOAT f11,
+                                      OPENST_FLOAT i0, OPENST_FLOAT j0,
+                                      OPENST_FLOAT i1, OPENST_FLOAT j1);
 
-OPENST_API void OpenST_INTERP_Trilinear_Formula(double *f,
-                                       double i, double j, double k,
-                                       double f000, double f001,
-                                       double f010, double f011,
-                                       double f100, double f101,
-                                       double f110, double f111,
-                                       double i0, double j0, double k0,
-                                       double i1, double j1, double k1);
+OPENST_API void OpenST_INTERP_Trilinear_Formula(OPENST_FLOAT *f,
+                                       OPENST_FLOAT i, OPENST_FLOAT j, OPENST_FLOAT k,
+                                       OPENST_FLOAT f000, OPENST_FLOAT f001,
+                                       OPENST_FLOAT f010, OPENST_FLOAT f011,
+                                       OPENST_FLOAT f100, OPENST_FLOAT f101,
+                                       OPENST_FLOAT f110, OPENST_FLOAT f111,
+                                       OPENST_FLOAT i0, OPENST_FLOAT j0, OPENST_FLOAT k0,
+                                       OPENST_FLOAT i1, OPENST_FLOAT j1, OPENST_FLOAT k1);
 
 OPENST_API void OpenST_INTERP_Trilinear_Neighboors(
-    double HI, double HJ, double HK,
-    double PI, double PJ, double PK,
+    OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+    OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
     size_t ii[2], size_t ji[2], size_t ki[2],
-    double ic[2], double jc[2], double kc[2],
+    OPENST_FLOAT ic[2], OPENST_FLOAT jc[2], OPENST_FLOAT kc[2],
     int *interp_i, int *interp_j, int *interp_k, int *interp_dims);
 
 OPENST_API void OpenST_INTERP_Trilinear_Compute(
-    double *A,
+    OPENST_FLOAT *A,
     size_t NI, size_t NJ, size_t NK,
-    double PI, double PJ, double PK,
+    OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
     size_t ii[2], size_t ji[2], size_t ki[2],
-    double ic[2], double jc[2], double kc[2],
+    OPENST_FLOAT ic[2], OPENST_FLOAT jc[2], OPENST_FLOAT kc[2],
     int interp_i, int interp_j, int interp_k, int interp_dims,
-    double *VAL);
+    OPENST_FLOAT *VAL);
 
 #ifdef __cplusplus
 }

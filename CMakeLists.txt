@@ -112,7 +112,7 @@ if(CMAKE_COMPILER_IS_GNUCC)
                 set(CMAKE_C_FLAGS "-flto ${CMAKE_C_FLAGS}")
         endif()
         # warnings
-        set(CMAKE_C_FLAGS "-Winline -Wall -Wextra -Wconversion -Wfatal-errors -Wdouble-promotion -fmessage-length=0 -pedantic ${CMAKE_C_FLAGS}")
+        set(CMAKE_C_FLAGS "-Winline -Wall -Wextra -Wconversion -Wfatal-errors -fmessage-length=0 -pedantic ${CMAKE_C_FLAGS}")
         # colorize
         if(${CMAKE_C_COMPILER_VERSION} VERSION_GREATER "4.9.0")
                 set(CMAKE_C_FLAGS "-fdiagnostics-color=always ${CMAKE_C_FLAGS}")
@@ -138,6 +138,13 @@ add_definitions(-DBUILDINFO_C_COMPILER="${CMAKE_C_COMPILER}")
 add_definitions(-DBUILDINFO_C_COMPILER_ID="${CMAKE_C_COMPILER_ID}")
 add_definitions(-DBUILDINFO_C_COMPILER_VERSION="${CMAKE_C_COMPILER_VERSION}")
 add_definitions(-DBUILDINFO_C_FLAGS="${CMAKE_C_FLAGS}")
+
+# process float precision define
+if(DEFINED OPENST_FLOAT_PRECISION_SINGLE)
+	add_definitions(-DOPENST_FLOAT_PRECISION_SINGLE="${OPENST_FLOAT_PRECISION_SINGLE}")
+	set(OPENST_VERSION "${OPENST_VERSION}-single")
+	set(OPENST_SOVERSION "${OPENST_SOVERSION}-single")
+endif()
 
 # GATHER ALL SOURCES
 include_directories(BEFORE include)

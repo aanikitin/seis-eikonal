@@ -9,26 +9,26 @@
 
 #define TEST_ID "BRT3D_EX1"
 
-#define DEFAULT_DOMAIN_SIZE 1.0
-#define DEFAULT_SRC 0.5
-#define DEFAULT_RCV 1.0
+#define DEFAULT_DOMAIN_SIZE OPENST_FLOAT_1_0
+#define DEFAULT_SRC OPENST_FLOAT_0_5
+#define DEFAULT_RCV OPENST_FLOAT_1_0
 #define DEFAULT_GRID_SIZE 50u
-#define DEFAULT_V 1.0
+#define DEFAULT_V OPENST_FLOAT_1_0
 
 
-void ex_init(double *U, double *V, size_t NI, size_t NJ, size_t NK,
-             double HI, double HJ, double HK,
-             double SRCI, double SRCJ, double SRCK){
+void ex_init(OPENST_FLOAT *U, OPENST_FLOAT *V, size_t NI, size_t NJ, size_t NK,
+             OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+             OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK){
     size_t i, j, k;
-    double di, dj, dk, dist;
+    OPENST_FLOAT di, dj, dk, dist;
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
             for(k = 0; k < NK; ++k){
                 V[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = DEFAULT_V;
-                di = SRCI - (double)i * HI;
-                dj = SRCJ - (double)j * HJ;
-                dk = SRCK - (double)k * HK;
-                dist = sqrt(di * di + dj * dj + dk * dk);
+                di = SRCI - (OPENST_FLOAT)i * HI;
+                dj = SRCJ - (OPENST_FLOAT)j * HJ;
+                dk = SRCK - (OPENST_FLOAT)k * HK;
+                dist = OPENST_FLOAT_SQRT(di * di + dj * dj + dk * dk);
                 U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = dist / DEFAULT_V;
             }
         }
@@ -51,13 +51,13 @@ void app_info(char *BIN_NAME,int usage){
 
 
 int main(int argc, char *argv[]){
-    double *U, *V, HI, HJ, HK;
+    OPENST_FLOAT *U, *V, HI, HJ, HK;
     double t1,t2;
     size_t NI, NJ, NK;
-    double SRCI, SRCJ, SRCK, RCVI, RCVJ, RCVK;
-    double BRT3D_TSTEP;
+    OPENST_FLOAT SRCI, SRCJ, SRCK, RCVI, RCVJ, RCVK;
+    OPENST_FLOAT BRT3D_TSTEP;
     int usage_flag, errcode;
-    double *RAY;
+    OPENST_FLOAT *RAY;
     size_t RAY_NI, RAY_NJ;
     size_t i;
     size_t MAX_SEG;
@@ -77,9 +77,9 @@ int main(int argc, char *argv[]){
 
     app_info(argv[0],usage_flag);
 
-    U = (double *) malloc(NI * NJ * NK * sizeof(double));
+    U = (OPENST_FLOAT *) malloc(NI * NJ * NK * sizeof(OPENST_FLOAT));
     assert(U);
-    V = (double *) malloc(NI * NJ * NK * sizeof(double));
+    V = (OPENST_FLOAT *) malloc(NI * NJ * NK * sizeof(OPENST_FLOAT));
     assert(V);
 
     if(argc > 4){
@@ -95,9 +95,9 @@ int main(int argc, char *argv[]){
     SRCI = DEFAULT_SRC;
     SRCJ = DEFAULT_SRC;
     SRCK = DEFAULT_SRC;
-    HI = DEFAULT_DOMAIN_SIZE / (double)(NI - 1);
-    HJ = DEFAULT_DOMAIN_SIZE / (double)(NJ - 1);
-    HK = DEFAULT_DOMAIN_SIZE / (double)(NK - 1);
+    HI = DEFAULT_DOMAIN_SIZE / (OPENST_FLOAT)(NI - 1);
+    HJ = DEFAULT_DOMAIN_SIZE / (OPENST_FLOAT)(NJ - 1);
+    HK = DEFAULT_DOMAIN_SIZE / (OPENST_FLOAT)(NK - 1);
 
     printf("V = %e\n",DEFAULT_V);
     printf("HI = %e; HJ = %e; HK = %e\n",HI,HJ,HK);

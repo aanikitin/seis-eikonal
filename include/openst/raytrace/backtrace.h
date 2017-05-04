@@ -8,6 +8,7 @@ extern "C" {
 #include <stddef.h>
 #include <math.h>
 
+#include "openst/common/float.h"
 #include "openst/common/hacks.h"
 #include "openst/common/memadr.h"
 #include "openst/common/dynarr.h"
@@ -16,24 +17,23 @@ extern "C" {
 #include "openst/common/macros.h"
 #include "openst/common/error.h"
 #include "openst/common/interp.h"
-#include "openst/common/float.h"
 
-OPENST_API double OpenST_BRT3D_SuggestTSTEP(double vmax,
-                               double HI, double HJ, double HK);
+OPENST_API OPENST_FLOAT OpenST_BRT3D_SuggestTSTEP(OPENST_FLOAT vmax,
+                               OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK);
 
-OPENST_API OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
+OPENST_API OPENST_ERR OpenST_BRT3D_Trace(OPENST_FLOAT *T, OPENST_FLOAT *V,
                 size_t NI, size_t NJ, size_t NK,
-                double HI, double HJ, double HK, double TSTEP,
-                double RCVI, double RCVJ, double RCVK,
-                double SRCI, double SRCJ, double SRCK, size_t MAX_SEG,
-                double **RAY, size_t *RAY_NI, size_t *RAY_NJ);
+                OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK, OPENST_FLOAT TSTEP,
+                OPENST_FLOAT RCVI, OPENST_FLOAT RCVJ, OPENST_FLOAT RCVK,
+                OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK, size_t MAX_SEG,
+                OPENST_FLOAT **RAY, size_t *RAY_NI, size_t *RAY_NJ);
 
-OPENST_API OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
+OPENST_API OPENST_ERR OpenST_BRT3D_Step(OPENST_FLOAT *T, OPENST_FLOAT *V,
                      size_t NI, size_t NJ, size_t NK,
-                     double HI, double HJ, double HK,
-                     double TSTEP,
-                     double CURI, double CURJ, double CURK,
-                     double *DSTI, double *DSTJ, double *DSTK);
+                     OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                     OPENST_FLOAT TSTEP,
+                     OPENST_FLOAT CURI, OPENST_FLOAT CURJ, OPENST_FLOAT CURK,
+                     OPENST_FLOAT *DSTI, OPENST_FLOAT *DSTJ, OPENST_FLOAT *DSTK);
 
 #ifdef __cplusplus
 }

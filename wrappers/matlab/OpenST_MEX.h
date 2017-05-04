@@ -34,15 +34,15 @@ void OPENST_MEX_PrintError(OPENST_MEX_ERRCODE errcode, char* errid,
 
 mwSize OPENST_MEX_GetNumel(mwSize ndims, mwSize *dims);
 
-int OPENST_MEX_ValueIsInteger(double value);
+int OPENST_MEX_ValueIsInteger(OPENST_FLOAT value);
 
 OPENST_MEX_ERRCODE OPENST_MEX_GetDoubleArray(mxArray *INP, 
-                                             double **ptr, mwSize *ndims,
+                                             OPENST_FLOAT **ptr, mwSize *ndims,
                                              mwSize **dims);
 
-OPENST_MEX_ERRCODE OPENST_MEX_GetDoubleScalar(mxArray *INP, double *out);
+OPENST_MEX_ERRCODE OPENST_MEX_GetDoubleScalar(mxArray *INP, OPENST_FLOAT *out);
 
-int OPENST_MEX_DoubleIsInteger(double);
+int OPENST_MEX_DoubleIsInteger(OPENST_FLOAT);
 
 #ifdef __cplusplus
 }

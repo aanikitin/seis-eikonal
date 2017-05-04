@@ -1,10 +1,10 @@
 #include "openst/common/grad.h"
 
 
-void OpenST_GRAD_Grad_Kernel(double *left, double *center, double *right,
-                             double H, double *grad){
-    double f1, f2;
-    double divh;
+void OpenST_GRAD_Grad_Kernel(OPENST_FLOAT *left, OPENST_FLOAT *center, OPENST_FLOAT *right,
+                             OPENST_FLOAT H, OPENST_FLOAT *grad){
+    OPENST_FLOAT f1, f2;
+    OPENST_FLOAT divh;
 
     divh = H;
     if(left == NULL){
@@ -16,20 +16,20 @@ void OpenST_GRAD_Grad_Kernel(double *left, double *center, double *right,
     } else {
         f1 = *left;
         f2 = *right;
-        divh *= 2.0;
+        divh *= OPENST_FLOAT_2_0;
     }
     *grad = (f2 - f1)/divh;
 
 }
 
 
-void OpenST_GRAD_Grad3D(double *A, size_t NI, size_t NJ, size_t NK,
-            double HI, double HJ, double HK,
+void OpenST_GRAD_Grad3D(OPENST_FLOAT *A, size_t NI, size_t NJ, size_t NK,
+            OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
             size_t i, size_t j, size_t k,
-            double *gradi, double *gradj, double *gradk){
+            OPENST_FLOAT *gradi, OPENST_FLOAT *gradj, OPENST_FLOAT *gradk){
 
-    double f1, f2;
-    double divh;
+    OPENST_FLOAT f1, f2;
+    OPENST_FLOAT divh;
 
     divh = HI;
     if(i == 0){
@@ -41,7 +41,7 @@ void OpenST_GRAD_Grad3D(double *A, size_t NI, size_t NJ, size_t NK,
     } else {
         f1 = A[OPENST_MEMADR_3D(i-1,j,k,NI,NJ,NK)];
         f2 = A[OPENST_MEMADR_3D(i+1,j,k,NI,NJ,NK)];
-        divh *= 2.0;
+        divh *= OPENST_FLOAT_2_0;
     }
     *gradi = (f2 - f1)/divh;
 
@@ -55,7 +55,7 @@ void OpenST_GRAD_Grad3D(double *A, size_t NI, size_t NJ, size_t NK,
     } else {
         f1 = A[OPENST_MEMADR_3D(i,j-1,k,NI,NJ,NK)];
         f2 = A[OPENST_MEMADR_3D(i,j+1,k,NI,NJ,NK)];
-        divh *= 2.0;
+        divh *= OPENST_FLOAT_2_0;
     }
     *gradj = (f2 - f1)/divh;
 
@@ -69,7 +69,7 @@ void OpenST_GRAD_Grad3D(double *A, size_t NI, size_t NJ, size_t NK,
     } else {
         f1 = A[OPENST_MEMADR_3D(i,j,k-1,NI,NJ,NK)];
         f2 = A[OPENST_MEMADR_3D(i,j,k+1,NI,NJ,NK)];
-        divh *= 2.0;
+        divh *= OPENST_FLOAT_2_0;
     }
     *gradk = (f2 - f1)/divh;
 }

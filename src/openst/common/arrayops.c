@@ -1,14 +1,14 @@
 #include "openst/common/arrayops.h"
 
 
-void OpenST_AOP_GetArrStats(double *A, size_t numel, double *min,
-                        double *max, double *mean){
+void OpenST_AOP_GetArrStats(OPENST_FLOAT *A, size_t numel, OPENST_FLOAT *min,
+                        OPENST_FLOAT *max, OPENST_FLOAT *mean){
     size_t i;
 
-    double tmin = INFINITY;
-    double tmax = -INFINITY;
-    double tmean = 0.0;
-    double cur;
+    OPENST_FLOAT tmin = OPENST_FLOAT_INF;
+    OPENST_FLOAT tmax = -OPENST_FLOAT_INF;
+    OPENST_FLOAT tmean = OPENST_FLOAT_0_0;
+    OPENST_FLOAT cur;
 
     if(min == NULL && max == NULL && mean == NULL){
         return;
@@ -17,10 +17,10 @@ void OpenST_AOP_GetArrStats(double *A, size_t numel, double *min,
     for(i = 0; i < numel; ++i){
         cur = A[i];
         if(min != NULL){
-            tmin = fmin(tmin,cur);
+            tmin = OPENST_FLOAT_FMIN(tmin,cur);
         }
         if(max != NULL){
-            tmax = fmax(tmax,cur);
+            tmax = OPENST_FLOAT_FMAX(tmax,cur);
         }
         if(mean != NULL){
             tmean += cur;
@@ -28,7 +28,7 @@ void OpenST_AOP_GetArrStats(double *A, size_t numel, double *min,
     }
 
     if(mean != NULL){
-        tmean /= (double)numel;
+        tmean /= (OPENST_FLOAT)numel;
 		*mean = tmean;
     }
 

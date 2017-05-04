@@ -1,11 +1,11 @@
 #include "openst/eikonal/fsm.h"
 
 
-OPENST_ERR OpenST_FSM3D(double *U, double *V,
+OPENST_ERR OpenST_FSM3D(OPENST_FLOAT *U, OPENST_FLOAT *V,
                         size_t NI, size_t NJ, size_t NK,
-                        double HI, double HJ, double HK,
-                        double SRCI, double SRCJ, double SRCK,
-                        double EPS, int max_iter,
+                        OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                        OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK,
+                        OPENST_FLOAT EPS, int max_iter,
                         int *it, int *converged){
 
     OPENST_ERR errcode = OPENST_ERR_SUCCESS;
@@ -62,12 +62,12 @@ void OpenST_FSM3D_GetSweepOrder(int it, int *REVI, int *REVJ, int *REVK){
 }
 
 
-int OpenST_FSM3D_Compute(double *U, double *V,
+int OpenST_FSM3D_Compute(OPENST_FLOAT *U, OPENST_FLOAT *V,
                          size_t NI, size_t NJ, size_t NK,
-                         double HI, double HJ, double HK,
+                         OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
                          int max_iter, int *converged,
                          size_t BSIZE_I, size_t BSIZE_J, size_t BSIZE_K,
-                         double EPS){
+                         OPENST_FLOAT EPS){
     return OpenST_FSM3D_ComputePartial(U, V,
                                        NI, NJ, NK,
                                        HI, HJ, HK,

@@ -9,11 +9,12 @@ extern "C" {
 #include <stddef.h>
 #include <math.h>
 
+#include "openst/common/float.h"
 #include "openst/common/hacks.h"
 #include "openst/common/macros.h"
 
-OPENST_API void OpenST_AOP_GetArrStats(double *A, size_t numel, double *min,
-                        double *max, double *mean);
+OPENST_API void OpenST_AOP_GetArrStats(OPENST_FLOAT *A, size_t numel, OPENST_FLOAT *min,
+                        OPENST_FLOAT *max, OPENST_FLOAT *mean);
 
 #ifdef __cplusplus
 }

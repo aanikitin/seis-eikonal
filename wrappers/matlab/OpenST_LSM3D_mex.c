@@ -10,26 +10,26 @@
 void mexFunction(int nlhs, mxArray *plhs[],
         int nrhs, const mxArray *prhs[])
 {
-    double *V;
+    OPENST_FLOAT *V;
     mwSize V_ndims;
     mwSize *V_dims;
-    double *SRC;
+    OPENST_FLOAT *SRC;
     mwSize SRC_ndims;
     mwSize *SRC_dims;
-    double *H;
+    OPENST_FLOAT *H;
     mwSize H_ndims;
     mwSize *H_dims;
-    double EPS, MAX_ITER;
-    double *U;
+    OPENST_FLOAT EPS, MAX_ITER;
+    OPENST_FLOAT *U;
     char *LSM_UNLOCKED;
     int max_iter_int, it, converged;
     size_t NI, NJ, NK;
-    double SRCI, SRCJ, SRCK, HI, HJ, HK;
+    OPENST_FLOAT SRCI, SRCJ, SRCK, HI, HJ, HK;
     
     LARGE_INTEGER frequency;
     LARGE_INTEGER start;
     LARGE_INTEGER end;
-    double elapsedSeconds;
+    OPENST_FLOAT elapsedSeconds;
     QueryPerformanceFrequency(&frequency);
     
     OPENST_MEX_CHECK((nrhs < 5), "Not enough input arguments.");
@@ -75,7 +75,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     OPENST_MEX_CHECK(((U = mxGetPr(plhs[0])) == NULL), NULL);
     
     OPENST_MEX_CHECK(((LSM_UNLOCKED = mxMalloc(NI * NJ * NK *
-            sizeof(double))) == NULL), NULL);
+            sizeof(OPENST_FLOAT))) == NULL), NULL);
     
     QueryPerformanceCounter(&start);
     OPENST_MEX_CHECK(((OpenST_LSM3D(U, LSM_UNLOCKED, V,
@@ -86,16 +86,16 @@ void mexFunction(int nlhs, mxArray *plhs[],
             &it, &converged)
             != OPENST_ERR_SUCCESS)), "OpenST_LSM3D Error");
     QueryPerformanceCounter(&end);
-    elapsedSeconds = (end.QuadPart - start.QuadPart) / (double)frequency.QuadPart;
+    elapsedSeconds = (end.QuadPart - start.QuadPart) / (OPENST_FLOAT)frequency.QuadPart;
     
     OPENST_MEX_CHECK(((plhs[1] =
-            mxCreateDoubleScalar((double) converged)) == NULL), NULL);
+            mxCreateDoubleScalar((OPENST_FLOAT) converged)) == NULL), NULL);
     
     OPENST_MEX_CHECK(((plhs[2] =
-            mxCreateDoubleScalar((double) it)) == NULL), NULL);
+            mxCreateDoubleScalar((OPENST_FLOAT) it)) == NULL), NULL);
     
     OPENST_MEX_CHECK(((plhs[3] =
-            mxCreateDoubleScalar((double) elapsedSeconds)) == NULL), NULL);
+            mxCreateDoubleScalar((OPENST_FLOAT) elapsedSeconds)) == NULL), NULL);
     
     mxFree(LSM_UNLOCKED);
     

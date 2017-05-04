@@ -3,7 +3,7 @@
 //TODO: improve handling of near source termination
 #include "openst/raytrace/backtrace.h"
 
-#define TSTEP_DEFAULT_MULT 0.999
+#define TSTEP_DEFAULT_MULT OPENST_FLOAT_SFX(0.999)
 #define DEBUG_LOG 0
 
 #if DEBUG_LOG
@@ -11,24 +11,24 @@
 #endif
 
 
-double OpenST_BRT3D_SuggestTSTEP(double vmax, double HI, double HJ, double HK) {
-    double tstep = fmin(HI, (fmin(HJ, HK))) / vmax * TSTEP_DEFAULT_MULT;
+OPENST_FLOAT OpenST_BRT3D_SuggestTSTEP(OPENST_FLOAT vmax, OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK) {
+    OPENST_FLOAT tstep = OPENST_FLOAT_FMIN(HI, (OPENST_FLOAT_FMIN(HJ, HK))) / vmax * TSTEP_DEFAULT_MULT;
     return tstep;
 }
 
 
-OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
+OPENST_ERR OpenST_BRT3D_Step(OPENST_FLOAT *T, OPENST_FLOAT *V,
     size_t NI, size_t NJ, size_t NK,
-    double HI, double HJ, double HK,
-    double TSTEP,
-    double CURI, double CURJ, double CURK,
-    double *DSTI, double *DSTJ, double *DSTK) {
+    OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+    OPENST_FLOAT TSTEP,
+    OPENST_FLOAT CURI, OPENST_FLOAT CURJ, OPENST_FLOAT CURK,
+    OPENST_FLOAT *DSTI, OPENST_FLOAT *DSTJ, OPENST_FLOAT *DSTK) {
 
     OPENST_ERR errcode = OPENST_ERR_SUCCESS;
-    double TC, TIL, TIR, TJL, TJR, TKL, TKR;
-    double *TILa, *TIRa, *TJLa, *TJRa, *TKLa, *TKRa;
-    double gradi, gradj, gradk, grad_length;
-    double vel, vali, valj, valk;
+    OPENST_FLOAT TC, TIL, TIR, TJL, TJR, TKL, TKR;
+    OPENST_FLOAT *TILa, *TIRa, *TJLa, *TJRa, *TKLa, *TKRa;
+    OPENST_FLOAT gradi, gradj, gradk, grad_length;
+    OPENST_FLOAT vel, vali, valj, valk;
 
     if( OpenST_CRS_IsPointNotWithinBounds(CURI, CURJ, CURK,
                                        NI, NJ, NK,
@@ -47,7 +47,7 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
     }
 
     TIRa = &TIR;
-    if( (CURI + HI) <= ((double)(NI - 1) * HI) ){
+    if( (CURI + HI) <= ((OPENST_FLOAT)(NI - 1) * HI) ){
         OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI + HI,CURJ,CURK,TIRa);
     } else {
         TIRa = NULL;
@@ -61,7 +61,7 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
     }
 
     TJRa = &TJR;
-    if( (CURJ + HJ) <= ((double)(NJ - 1) * HJ) ){
+    if( (CURJ + HJ) <= ((OPENST_FLOAT)(NJ - 1) * HJ) ){
         OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ + HJ,CURK,TJRa);
     } else {
         TJRa = NULL;
@@ -75,7 +75,7 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
     }
 
     TKRa = &TKR;
-    if( (CURK + HK) <= ((double)(NK - 1) * HK) ){
+    if( (CURK + HK) <= ((OPENST_FLOAT)(NK - 1) * HK) ){
         OpenST_INTERP_Trilinear(T,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK + HK,TKRa);
     } else {
         TKRa = NULL;
@@ -85,7 +85,7 @@ OPENST_ERR OpenST_BRT3D_Step(double *T, double *V,
     OpenST_GRAD_Grad_Kernel(TJLa,&TC,TJRa,HJ,&gradj);
     OpenST_GRAD_Grad_Kernel(TKLa,&TC,TKRa,HK,&gradk);
 
-    grad_length = sqrt(pow(gradi, 2.0) + pow(gradj, 2.0) + pow(gradk, 2.0));
+    grad_length = OPENST_FLOAT_SQRT(OPENST_FLOAT_POW(gradi, OPENST_FLOAT_2_0) + OPENST_FLOAT_POW(gradj, OPENST_FLOAT_2_0) + OPENST_FLOAT_POW(gradk, OPENST_FLOAT_2_0));
 
     OpenST_INTERP_Trilinear(V,NI,NJ,NK,HI,HJ,HK,CURI,CURJ,CURK,&vel);
 
@@ -112,18 +112,18 @@ EXIT:
 }
 
 
-OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
+OPENST_ERR OpenST_BRT3D_Trace(OPENST_FLOAT *T, OPENST_FLOAT *V,
     size_t NI, size_t NJ, size_t NK,
-    double HI, double HJ, double HK, double TSTEP,
-    double RCVI, double RCVJ, double RCVK,
-    double SRCI, double SRCJ, double SRCK,
+    OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK, OPENST_FLOAT TSTEP,
+    OPENST_FLOAT RCVI, OPENST_FLOAT RCVJ, OPENST_FLOAT RCVK,
+    OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK,
     size_t MAX_SEG,
-    double **RAY, size_t *RAY_NI, size_t *RAY_NJ) {
+    OPENST_FLOAT **RAY, size_t *RAY_NI, size_t *RAY_NJ) {
 
     OPENST_ERR errcode = OPENST_ERR_ALG_TERMINATED;
-    double CUR[3];
-    double DST[3];
-    double SRCI_L, SRCI_H, SRCJ_L, SRCJ_H, SRCK_L, SRCK_H;
+    OPENST_FLOAT CUR[3];
+    OPENST_FLOAT DST[3];
+    OPENST_FLOAT SRCI_L, SRCI_H, SRCJ_L, SRCJ_H, SRCK_L, SRCK_H;
     size_t numseg;
 
     struct OpenST_DYNARR arr;
@@ -133,14 +133,14 @@ OPENST_ERR OpenST_BRT3D_Trace(double *T, double *V,
     CUR[1] = RCVJ;
     CUR[2] = RCVK;
 
-    SRCI_L = SRCI - HI / 2.0;
-    SRCI_H = SRCI + HI / 2.0;
-    SRCJ_L = SRCJ - HJ / 2.0;
-    SRCJ_H = SRCJ + HJ / 2.0;
-    SRCK_L = SRCK - HK / 2.0;
-    SRCK_H = SRCK + HK / 2.0;
+    SRCI_L = SRCI - HI / OPENST_FLOAT_2_0;
+    SRCI_H = SRCI + HI / OPENST_FLOAT_2_0;
+    SRCJ_L = SRCJ - HJ / OPENST_FLOAT_2_0;
+    SRCJ_H = SRCJ + HJ / OPENST_FLOAT_2_0;
+    SRCK_L = SRCK - HK / OPENST_FLOAT_2_0;
+    SRCK_H = SRCK + HK / OPENST_FLOAT_2_0;
 
-    if (OpenST_DYNARR_Init(arrptr, NI + NJ + NK, sizeof(double) * 3) == NULL) {
+    if (OpenST_DYNARR_Init(arrptr, NI + NJ + NK, sizeof(OPENST_FLOAT) * 3) == NULL) {
         errcode = OPENST_ERR_MEMORY_ALLOC;
         goto EXIT;
     }
@@ -188,7 +188,7 @@ FINISH:
         goto EXIT;
     }
 
-    *RAY = (double *) arr.data;
+    *RAY = (OPENST_FLOAT *) arr.data;
     *RAY_NJ = 3;
     *RAY_NI = arr.num;
 

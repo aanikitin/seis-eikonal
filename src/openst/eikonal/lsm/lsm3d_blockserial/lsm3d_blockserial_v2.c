@@ -7,13 +7,13 @@ const char OPENST_LSM3D_BLOCKSERIAL_IMP_NAME[] = M_LSM3D_BLOCKSERIAL_IMP_NAME;
 const size_t OPENST_LSM3D_BLOCKSERIAL_IMP_NAME_LENGTH = sizeof(OPENST_LSM3D_BLOCKSERIAL_IMP_NAME);
 
 
-int OpenST_LSM3D_BlockSerial_1H(double *U, char *LSM_UNLOCKED, double *V,
+int OpenST_LSM3D_BlockSerial_1H(OPENST_FLOAT *U, char *LSM_UNLOCKED, OPENST_FLOAT *V,
                                 size_t NI, size_t NJ, size_t NK,
-                                double H,
+                                OPENST_FLOAT H,
                                 int REVI, int REVJ, int REVK,
                                 size_t istart, size_t jstart, size_t kstart,
                                 size_t isize, size_t jsize, size_t ksize,
-                                double EPS){
+                                OPENST_FLOAT EPS){
 
     int notconverged;
     size_t i, j, ir, jr, kr, iend, jend, kend;
@@ -45,13 +45,13 @@ int OpenST_LSM3D_BlockSerial_1H(double *U, char *LSM_UNLOCKED, double *V,
 }
 
 
-int OpenST_LSM3D_BlockSerial(double *U, char *LSM_UNLOCKED, double *V,
+int OpenST_LSM3D_BlockSerial(OPENST_FLOAT *U, char *LSM_UNLOCKED, OPENST_FLOAT *V,
                              size_t NI, size_t NJ, size_t NK,
-                             double HI, double HJ, double HK,
+                             OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
                              int REVI, int REVJ, int REVK,
                              size_t istart, size_t jstart, size_t kstart,
                              size_t isize, size_t jsize, size_t ksize,
-                             double EPS){
+                             OPENST_FLOAT EPS){
 
     int notconverged;
     size_t i, j, ir, jr, kr, iend, jend, kend;

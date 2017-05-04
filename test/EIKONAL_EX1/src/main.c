@@ -9,15 +9,15 @@
 
 #define TEST_ID "EIKONAL_EX1"
 
-#define DEFAULT_DOMAIN_SIZE 1.0
-#define DEFAULT_SRC 0.5
+#define DEFAULT_DOMAIN_SIZE OPENST_FLOAT_1_0
+#define DEFAULT_SRC OPENST_FLOAT_0_5
 #define DEFAULT_GRID_SIZE 50u
 #define DEFAULT_MAX_ITER 10
-#define DEFAULT_EPS_MULT 0.01
-#define DEFAULT_V 1.0
+#define DEFAULT_EPS_MULT OPENST_FLOAT_1_0
+#define DEFAULT_V OPENST_FLOAT_1_0
 
 
-void ex_init(double *V, size_t NI, size_t NJ, size_t NK){
+void ex_init(OPENST_FLOAT *V, size_t NI, size_t NJ, size_t NK){
     size_t i, j, k;
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
@@ -29,47 +29,47 @@ void ex_init(double *V, size_t NI, size_t NJ, size_t NK){
 }
 
 
-void ex_check(double *U,
+void ex_check(OPENST_FLOAT *U,
               size_t NI, size_t NJ, size_t NK,
-              double HI, double HJ, double HK,
-              double SRCI, double SRCJ, double SRCK,
-              double *L1, double *L2, double *Linf,
-              double *Umin, double *Umax, double *Umean){
+              OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+              OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK,
+              OPENST_FLOAT *L1, OPENST_FLOAT *L2, OPENST_FLOAT *Linf,
+              OPENST_FLOAT *Umin, OPENST_FLOAT *Umax, OPENST_FLOAT *Umean){
 
     size_t i, j, k, NN;
-    double uval, umin, umax, umean;
-    double di, dj, dk, dist, diff, l1, l2, linf;
-    l1 = 0.0;
-    l2 = 0.0;
-    linf = -INFINITY;
-    umin = INFINITY;
-    umax = -INFINITY;
-    umean = 0.0;
+    OPENST_FLOAT uval, umin, umax, umean;
+    OPENST_FLOAT di, dj, dk, dist, diff, l1, l2, linf;
+    l1 = OPENST_FLOAT_0_0;
+    l2 = OPENST_FLOAT_0_0;
+    linf = -OPENST_FLOAT_INF;
+    umin = OPENST_FLOAT_INF;
+    umax = -OPENST_FLOAT_INF;
+    umean = OPENST_FLOAT_0_0;
     NN = NI * NJ * NK;
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
             for(k = 0; k < NK; ++k){
                 uval = U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)];
-                umin = fmin(umin,uval);
-                umax = fmax(umax,uval);
+                umin = OPENST_FLOAT_FMIN(umin,uval);
+                umax = OPENST_FLOAT_FMAX(umax,uval);
                 umean += uval;
-                di = SRCI - (double)i * HI;
-                dj = SRCJ - (double)j * HJ;
-                dk = SRCK - (double)k * HK;
-                dist = sqrt(di * di + dj * dj + dk * dk);
+                di = SRCI - (OPENST_FLOAT)i * HI;
+                dj = SRCJ - (OPENST_FLOAT)j * HJ;
+                dk = SRCK - (OPENST_FLOAT)k * HK;
+                dist = OPENST_FLOAT_SQRT(di * di + dj * dj + dk * dk);
                 diff = uval - dist / DEFAULT_V;
-                l1 += fabs(diff);
+                l1 += OPENST_FLOAT_FABS(diff);
                 l2 += (diff * diff);
-                linf = fmax(linf,fabs(diff));
+                linf = OPENST_FLOAT_FMAX(linf,OPENST_FLOAT_FABS(diff));
             }
         }
     }
-    *L1 = l1/(double)NN;
-    *L2 = l2/(double)NN;
+    *L1 = l1/(OPENST_FLOAT)NN;
+    *L2 = l2/(OPENST_FLOAT)NN;
     *Linf = linf;
     *Umin = umin;
     *Umax = umax;
-    *Umean = umean/(double)NN;
+    *Umean = umean/(OPENST_FLOAT)NN;
 }
 
 
@@ -92,20 +92,20 @@ void app_info(char *BIN_NAME,int usage){
 int main(int argc, char *argv[]){
 
     OPENST_ERR errcode;
-    double *U, *V, HI, HJ, HK;
+    OPENST_FLOAT *U, *V, HI, HJ, HK;
     int max_iter;
     int it, converged;
     double t1,t2;
-    double L1, L2, Linf, Umin, Umax, Umean;
+    OPENST_FLOAT L1, L2, Linf, Umin, Umax, Umean;
     size_t NI, NJ, NK;
-    double SRCI, SRCJ, SRCK;
+    OPENST_FLOAT SRCI, SRCJ, SRCK;
     size_t BSIZE_I;
     size_t BSIZE_J;
     size_t BSIZE_K;
     char *LSM_UNLOCKED;
     int OMP_MAX_THREADS;
-    double vmin, vmax, vmean;
-    double EPS, EPS_MULT, EIK3D_Time, BRT3D_TSTEP;
+    OPENST_FLOAT vmin, vmax, vmean;
+    OPENST_FLOAT EPS, EPS_MULT, EIK3D_Time, BRT3D_TSTEP;
     const char *IMP_NAME, *IMP_BLOCKSERIAL_NAME;
     int usage_flag;
     size_t SRCidx_i, i, j, k;
@@ -146,9 +146,9 @@ int main(int argc, char *argv[]){
 
     app_info(argv[0],usage_flag);
 
-    U = (double *)malloc(NI * NJ * NK * sizeof(double));
+    U = (OPENST_FLOAT *)malloc(NI * NJ * NK * sizeof(OPENST_FLOAT));
     assert(U);
-    V = (double *)malloc(NI * NJ * NK * sizeof(double));
+    V = (OPENST_FLOAT *)malloc(NI * NJ * NK * sizeof(OPENST_FLOAT));
     assert(V);
     LSM_UNLOCKED = (char *)malloc(NI * NJ * NK * sizeof(char));
     assert(LSM_UNLOCKED);
@@ -156,9 +156,9 @@ int main(int argc, char *argv[]){
     SRCI = DEFAULT_SRC;
     SRCJ = DEFAULT_SRC;
     SRCK = DEFAULT_SRC;
-    HI = DEFAULT_DOMAIN_SIZE / (double)(NI - 1);
-    HJ = DEFAULT_DOMAIN_SIZE / (double)(NJ - 1);
-    HK = DEFAULT_DOMAIN_SIZE / (double)(NK - 1);
+    HI = DEFAULT_DOMAIN_SIZE / (OPENST_FLOAT)(NI - 1);
+    HJ = DEFAULT_DOMAIN_SIZE / (OPENST_FLOAT)(NJ - 1);
+    HK = DEFAULT_DOMAIN_SIZE / (OPENST_FLOAT)(NK - 1);
 
     printf("V = %e\n",DEFAULT_V);
     printf("HI = %e; HJ = %e; HK = %e\n",HI,HJ,HK);
@@ -167,13 +167,13 @@ int main(int argc, char *argv[]){
 
     ex_init(V, NI, NJ, NK);
 
-    if(EPS_MULT != 0.0){
+    if(EPS_MULT != OPENST_FLOAT_0_0){
         OpenST_AOP_GetArrStats(V, NI * NJ * NK, &vmin, &vmax, &vmean);
         printf("Vmin = %e; Vmean = %e; Vmax = %e\n",vmin,vmean,vmax);
         BRT3D_TSTEP = OpenST_BRT3D_SuggestTSTEP(vmax, HI, HJ, HK);
         EPS = BRT3D_TSTEP * EPS_MULT;
     } else {
-        EPS = 0.0;
+        EPS = OPENST_FLOAT_0_0;
     }
 
     t1 = omp_get_wtime();

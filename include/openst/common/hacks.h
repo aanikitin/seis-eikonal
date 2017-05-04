@@ -34,9 +34,9 @@ extern "C" {
 #endif
 
 #if OPENST_HACK_FLOAT_FUNC
-#define fmin(a,b) ((a) < (b) ? (a) : (b))
-#define fmax(a,b) ((b) > (a) ? (b) : (a))
-#define round(a) (((floor((a)) + 0.5) < ceil((a))) ? floor((a)) : ceil((a)))
+#define fmin(a,b) OPENST_HACK_MIN((a),(b))
+#define fmax(a,b) OPENST_HACK_MAX((a),(b))
+#define round(a) (((floor((a)) + OPENST_FLOAT_0_5) < ceil((a))) ? floor((a)) : ceil((a)))
 #endif
 
 #endif /* if OPENST_HACK */

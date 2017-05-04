@@ -2,17 +2,17 @@
 #include "openst/eikonal/fsm.h"
 
 
-OPENST_ERR OpenST_FSM3D_InitSRC_Point(double *U, double *V,
+OPENST_ERR OpenST_FSM3D_InitSRC_Point(OPENST_FLOAT *U, OPENST_FLOAT *V,
                                       size_t NI, size_t NJ, size_t NK,
-                                      double HI, double HJ, double HK,
-                                      double SRCI, double SRCJ, double SRCK,
+                                      OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                                      OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK,
                                       size_t **SRCidx, size_t *SRCidx_NI,
                                       size_t *SRCidx_NJ){
 
     OPENST_ERR errcode = OPENST_ERR_SUCCESS;
     size_t ii, ji, ki;
-    double ic, jc, kc;
-    double dist;
+    OPENST_FLOAT ic, jc, kc;
+    OPENST_FLOAT dist;
     int output_srcidx;
     size_t *SRCidx_loc = NULL;
     size_t SRCidx_NI_loc;
@@ -39,14 +39,14 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Point(double *U, double *V,
         output_srcidx = 0;
     }
 
-    ii = (size_t) round(SRCI / HI);
-    ic = (double)ii * HI;
+    ii = (size_t) OPENST_FLOAT_ROUND(SRCI / HI);
+    ic = (OPENST_FLOAT)ii * HI;
     
-    ji = (size_t) round(SRCJ / HJ);
-    jc = (double)ji * HJ;
+    ji = (size_t) OPENST_FLOAT_ROUND(SRCJ / HJ);
+    jc = (OPENST_FLOAT)ji * HJ;
     
-    ki = (size_t) round(SRCK / HK);
-    kc = (double)ki * HK;
+    ki = (size_t) OPENST_FLOAT_ROUND(SRCK / HK);
+    kc = (OPENST_FLOAT)ki * HK;
 
     dist = OpenST_CRS_Distance3D(SRCI, SRCJ, SRCK, ic, jc, kc);
 
@@ -68,18 +68,18 @@ EXIT:
 }
 
 
-OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
+OPENST_ERR OpenST_FSM3D_InitSRC_Linear(OPENST_FLOAT *U, OPENST_FLOAT *V,
                                        size_t NI, size_t NJ, size_t NK,
-                                       double HI, double HJ, double HK,
-                                       double SRCI, double SRCJ, double SRCK,
+                                       OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                                       OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK,
                                        size_t **SRCidx,
                                        size_t *SRCidx_NI, size_t *SRCidx_NJ){
 
     OPENST_ERR errcode = OPENST_ERR_SUCCESS;
-    double SRCV;
-    double dist;
+    OPENST_FLOAT SRCV;
+    OPENST_FLOAT dist;
     size_t ii[2], ji[2], ki[2];
-    double ic[2], jc[2], kc[2];
+    OPENST_FLOAT ic[2], jc[2], kc[2];
     int i, j, k, interp_dims, interp_i, interp_j, interp_k;
     int output_srcidx;
     size_t *SRCidx_loc = NULL;
@@ -121,7 +121,7 @@ OPENST_ERR OpenST_FSM3D_InitSRC_Linear(double *U, double *V,
 
     if(interp_dims == 0){
 
-        U[OPENST_MEMADR_3D(ii[0], ji[0], ki[0], NI, NJ, NK)] = 0.0;
+        U[OPENST_MEMADR_3D(ii[0], ji[0], ki[0], NI, NJ, NK)] = OPENST_FLOAT_0_0;
 
         if(output_srcidx){
             SRCidx_loc[0] = ii[0];
@@ -176,10 +176,10 @@ EXIT:
 }
 
 
-OPENST_ERR OpenST_FSM3D_Init_2(double *U, double *V,
+OPENST_ERR OpenST_FSM3D_Init_2(OPENST_FLOAT *U, OPENST_FLOAT *V,
                                size_t NI, size_t NJ, size_t NK,
-                               double HI, double HJ, double HK,
-                               double SRCI, double SRCJ, double SRCK,
+                               OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                               OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK,
                                size_t **SRCidx, size_t *SRCidx_NI,
                                size_t *SRCidx_NJ,
                                OPENST_FSM3D_INIT_METHOD method){
@@ -190,7 +190,7 @@ OPENST_ERR OpenST_FSM3D_Init_2(double *U, double *V,
     for(i = 0; i < NI; ++i){
         for(j = 0; j < NJ; ++j){
             for(k = 0; k < NK; ++k){
-                U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = INFINITY;
+                U[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)] = OPENST_FLOAT_INF;
             }
         }
     }
@@ -216,10 +216,10 @@ OPENST_ERR OpenST_FSM3D_Init_2(double *U, double *V,
 }
 
 
-OPENST_ERR OpenST_FSM3D_Init(double *U, double *V,
+OPENST_ERR OpenST_FSM3D_Init(OPENST_FLOAT *U, OPENST_FLOAT *V,
                              size_t NI, size_t NJ, size_t NK,
-                             double HI, double HJ, double HK,
-                             double SRCI, double SRCJ, double SRCK){
+                             OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                             OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK){
     return OpenST_FSM3D_Init_2(U,V,
                                NI,NJ,NK,
                                HI,HJ,HK,

@@ -14,7 +14,7 @@ void OPENST_MEX_PrintError(OPENST_MEX_ERRCODE errcode, char* errid,
 
 
 OPENST_MEX_ERRCODE OPENST_MEX_GetDoubleArray(mxArray *INP,
-        double **ptr, mwSize *ndims,
+        OPENST_FLOAT **ptr, mwSize *ndims,
         mwSize **dims){
     
     if( !mxIsDouble(INP) ){
@@ -45,12 +45,12 @@ mwSize OPENST_MEX_GetNumel(mwSize ndims, mwSize *dims){
 }
 
 
-int OPENST_MEX_ValueIsInteger(double value){
-    return (ceil(value) == floor(value));
+int OPENST_MEX_ValueIsInteger(OPENST_FLOAT value){
+    return (OPENST_FLOAT_CEIL(value) == OPENST_FLOAT_FLOOR(value));
 }
 
 
-OPENST_MEX_ERRCODE OPENST_MEX_GetDoubleScalar(mxArray *INP, double *out){
+OPENST_MEX_ERRCODE OPENST_MEX_GetDoubleScalar(mxArray *INP, OPENST_FLOAT *out){
     
     if( !mxIsDouble(INP) ){
         return OPENST_MEX_ERRCODE_WRONG_TYPE;

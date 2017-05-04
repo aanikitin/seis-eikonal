@@ -1,15 +1,15 @@
 #include "openst/eikonal/fsm.h"
 
 
-int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
+int OpenST_FSM3D_NodeUpdate_1H(OPENST_FLOAT *U, OPENST_FLOAT *V,
                                size_t NI, size_t NJ, size_t NK,
-                               double H,
+                               OPENST_FLOAT H,
                                int REVI, int REVJ, int REVK,
-                               size_t ir, size_t jr, size_t kr, double EPS){
+                               size_t ir, size_t jr, size_t kr, OPENST_FLOAT EPS){
 
     size_t i,j,k;
     size_t mem_cur, mem_il, mem_ir, mem_jl, mem_jr, mem_kl, mem_kr;
-    double uold, uxmin, uymin, uzmin, a1, a2, a3, t1, t2, t3, unew;
+    OPENST_FLOAT uold, uxmin, uymin, uzmin, a1, a2, a3, t1, t2, t3, unew;
     int notconverged;
 
     notconverged = 0;
@@ -45,7 +45,7 @@ int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
     } else if (j == NJ - 1){
         uxmin = U[mem_jl];
     } else {
-        uxmin = fmin(U[mem_jl], U[mem_jr]);
+        uxmin = OPENST_FLOAT_FMIN(U[mem_jl], U[mem_jr]);
     }
 
     if(i == 0){
@@ -53,7 +53,7 @@ int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
     } else if (i == NI - 1){
         uymin = U[mem_il];
     } else {
-        uymin = fmin(U[mem_il], U[mem_ir]);
+        uymin = OPENST_FLOAT_FMIN(U[mem_il], U[mem_ir]);
     }
 
     if(k == 0){
@@ -61,7 +61,7 @@ int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
     } else if (k == NK - 1){
         uzmin = U[mem_kl];
     } else {
-        uzmin = fmin(U[mem_kl], U[mem_kr]);
+        uzmin = OPENST_FLOAT_FMIN(U[mem_kl], U[mem_kr]);
     }
 
     if (uxmin <= uymin && uxmin <= uzmin){
@@ -97,18 +97,18 @@ int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
     t2 = H / V[mem_cur];
     unew = a1 + t2;
     if (unew > a2){
-        unew = (a1 + a2 + sqrt(2.0 * t2 * t2 - t1 * t1))/2.0;
+        unew = (a1 + a2 + OPENST_FLOAT_SQRT(OPENST_FLOAT_2_0 * t2 * t2 - t1 * t1))/OPENST_FLOAT_2_0;
         if (unew > a3){
             t3 = a1 + a2 + a3;
-            unew = (t3 + sqrt(t3 * t3  - 3.0 *
+            unew = (t3 + OPENST_FLOAT_SQRT(t3 * t3  - OPENST_FLOAT_3_0 *
                               (a1 * a1 + a2 * a2 + a3 * a3
-                               - t2 * t2)))/3.0;
+                               - t2 * t2)))/OPENST_FLOAT_3_0;
         }
     }
 
     if(unew < uold){
 
-        if(fabs(uold - unew) > EPS){
+        if(OPENST_FLOAT_FABS(uold - unew) > EPS){
             notconverged = 1;
         }
 
@@ -120,21 +120,21 @@ int OpenST_FSM3D_NodeUpdate_1H(double *U, double *V,
 }
 
 
-int OpenST_FSM3D_NodeUpdate(double *U, double *V,
+int OpenST_FSM3D_NodeUpdate(OPENST_FLOAT *U, OPENST_FLOAT *V,
                             size_t NI, size_t NJ, size_t NK,
-                            double HI, double HJ, double HK,
+                            OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
                             int REVI, int REVJ, int REVK,
                             size_t ir, size_t jr, size_t kr,
-                            double EPS){
+                            OPENST_FLOAT EPS){
 
     size_t i,j,k;
     size_t mem_cur, mem_il, mem_ir, mem_jl, mem_jr, mem_kl, mem_kr;
-    double uold, v, uimin, ujmin, ukmin;
-    double a1, a2, a3;
-    double h1, h2, h3;
-    double m1, m2, m3, mf;
-    double a, bp, b, c, D;
-    double unew;
+    OPENST_FLOAT uold, v, uimin, ujmin, ukmin;
+    OPENST_FLOAT a1, a2, a3;
+    OPENST_FLOAT h1, h2, h3;
+    OPENST_FLOAT m1, m2, m3, mf;
+    OPENST_FLOAT a, bp, b, c, D;
+    OPENST_FLOAT unew;
     int notconverged;
 
     notconverged = 0;
@@ -171,7 +171,7 @@ int OpenST_FSM3D_NodeUpdate(double *U, double *V,
     } else if (j == NJ - 1){
         ujmin = U[mem_jl];
     } else {
-        ujmin = fmin(U[mem_jl], U[mem_jr]);
+        ujmin = OPENST_FLOAT_FMIN(U[mem_jl], U[mem_jr]);
     }
 
     if(i == 0){
@@ -179,7 +179,7 @@ int OpenST_FSM3D_NodeUpdate(double *U, double *V,
     } else if (i == NI - 1){
         uimin = U[mem_il];
     } else {
-        uimin = fmin(U[mem_il], U[mem_ir]);
+        uimin = OPENST_FLOAT_FMIN(U[mem_il], U[mem_ir]);
     }
 
     if(k == 0){
@@ -187,7 +187,7 @@ int OpenST_FSM3D_NodeUpdate(double *U, double *V,
     } else if (k == NK - 1){
         ukmin = U[mem_kl];
     } else {
-        ukmin = fmin(U[mem_kl], U[mem_kr]);
+        ukmin = OPENST_FLOAT_FMIN(U[mem_kl], U[mem_kr]);
     }
 
     if (ujmin <= uimin && ujmin <= ukmin){
@@ -245,10 +245,10 @@ int OpenST_FSM3D_NodeUpdate(double *U, double *V,
         bp = m1 * a1 + m2 * a2;
         c = m1 * a1 * a1 + m2 * a2 * a2 - mf / (v * v);
 
-        b = -2.0 * bp;
-        D = b * b - 4.0 * a * c;
+        b = -OPENST_FLOAT_2_0 * bp;
+        D = b * b - OPENST_FLOAT_4_0 * a * c;
 
-        unew = (-b + sqrt(D)) / (2.0 * a);
+        unew = (-b + OPENST_FLOAT_SQRT(D)) / (OPENST_FLOAT_2_0 * a);
 
         if (unew > a3){
             m3 = h1 * h1 * h2 * h2;
@@ -256,16 +256,16 @@ int OpenST_FSM3D_NodeUpdate(double *U, double *V,
             bp += m3 * a3;
             c += m3 * a3 * a3;
 
-            b = -2.0 * bp;
-            D = b * b - 4.0 * a * c;
+            b = -OPENST_FLOAT_2_0 * bp;
+            D = b * b - OPENST_FLOAT_4_0 * a * c;
 
-            unew = (-b + sqrt(D)) / (2.0 * a);
+            unew = (-b + OPENST_FLOAT_SQRT(D)) / (OPENST_FLOAT_2_0 * a);
         }
     }
 
     if(unew < uold){
 
-        if(fabs(uold - unew) > EPS){
+        if(OPENST_FLOAT_FABS(uold - unew) > EPS){
             notconverged = 1;
         }
 

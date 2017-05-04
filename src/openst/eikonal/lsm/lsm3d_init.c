@@ -1,10 +1,10 @@
 #include "openst/eikonal/lsm.h"
 
 
-OPENST_ERR OpenST_LSM3D_Init_2(double *U, char *LSM_UNLOCKED, double *V,
+OPENST_ERR OpenST_LSM3D_Init_2(OPENST_FLOAT *U, char *LSM_UNLOCKED, OPENST_FLOAT *V,
                              size_t NI, size_t NJ, size_t NK,
-                             double HI, double HJ, double HK,
-                             double SRCI, double SRCJ, double SRCK,
+                             OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                             OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK,
                              size_t **SRCidx, size_t *SRCidx_NI,
                              size_t *SRCidx_NJ,
                              OPENST_FSM3D_INIT_METHOD method){
@@ -75,10 +75,10 @@ OPENST_ERR OpenST_LSM3D_Init_2(double *U, char *LSM_UNLOCKED, double *V,
 }
 
 
-OPENST_ERR OpenST_LSM3D_Init(double *U, char *LSM_UNLOCKED, double *V,
+OPENST_ERR OpenST_LSM3D_Init(OPENST_FLOAT *U, char *LSM_UNLOCKED, OPENST_FLOAT *V,
                              size_t NI, size_t NJ, size_t NK,
-                             double HI, double HJ, double HK,
-                             double SRCI, double SRCJ, double SRCK){
+                             OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                             OPENST_FLOAT SRCI, OPENST_FLOAT SRCJ, OPENST_FLOAT SRCK){
     return OpenST_LSM3D_Init_2(U,LSM_UNLOCKED,V,
                              NI,NJ,NK,
                              HI,HJ,HK,

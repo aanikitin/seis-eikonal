@@ -11,34 +11,34 @@
 void mexFunction(int nlhs, mxArray *plhs[],
         int nrhs, const mxArray *prhs[])
 {
-    double *T;
+    OPENST_FLOAT *T;
     mwSize T_ndims;
     mwSize *T_dims;
-    double *V;
+    OPENST_FLOAT *V;
     mwSize V_ndims;
     mwSize *V_dims;
-    double *H;
+    OPENST_FLOAT *H;
     mwSize H_ndims;
     mwSize *H_dims;
-    double TSTEP;
-    double *RCV;
+    OPENST_FLOAT TSTEP;
+    OPENST_FLOAT *RCV;
     mwSize RCV_ndims;
     mwSize *RCV_dims;
-    double *SRC;
+    OPENST_FLOAT *SRC;
     mwSize SRC_ndims;
     mwSize *SRC_dims;
     size_t NI, NJ, NK;
-    double HI, HJ, HK;
-    double RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK;
-    double MAX_SEG;
-    double *RAY, *RAYout;
+    OPENST_FLOAT HI, HJ, HK;
+    OPENST_FLOAT RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK;
+    OPENST_FLOAT MAX_SEG;
+    OPENST_FLOAT *RAY, *RAYout;
     size_t RAY_NI, RAY_NJ;
     mwSize RAY_dims[2];
     
     LARGE_INTEGER frequency;
     LARGE_INTEGER start;
     LARGE_INTEGER end;
-    double elapsedSeconds;
+    OPENST_FLOAT elapsedSeconds;
     QueryPerformanceFrequency(&frequency);
     
     OPENST_MEX_CHECK((nrhs < 7), "Not enough input arguments.");
@@ -101,7 +101,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
             RCVI, RCVJ, RCVK, SRCI, SRCJ, SRCK, (size_t) MAX_SEG,
             &RAY, &RAY_NI, &RAY_NJ)), "OpenST_BRT3D Error");
     QueryPerformanceCounter(&end);
-    elapsedSeconds = (end.QuadPart - start.QuadPart) / (double)frequency.QuadPart;
+    elapsedSeconds = (end.QuadPart - start.QuadPart) / (OPENST_FLOAT)frequency.QuadPart;
     
     RAY_dims[0] = RAY_NJ;
     RAY_dims[1] = RAY_NI;
@@ -112,8 +112,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
     OPENST_MEX_CHECK(((RAYout = mxGetPr(plhs[0])) == NULL), NULL);
     
     OPENST_MEX_CHECK(((plhs[1] =
-            mxCreateDoubleScalar((double) elapsedSeconds)) == NULL), NULL);
+            mxCreateDoubleScalar((OPENST_FLOAT) elapsedSeconds)) == NULL), NULL);
     
-    memcpy(RAYout, RAY, RAY_NI * RAY_NJ * sizeof(double));
+    memcpy(RAYout, RAY, RAY_NI * RAY_NJ * sizeof(OPENST_FLOAT));
     
 }

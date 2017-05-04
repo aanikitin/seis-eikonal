@@ -3,8 +3,6 @@
 *
 # but not project subdirs
 !*/
-# except build subdir
-build
 # and files such as
 !.gitignore
 !.gitattributes
@@ -17,4 +15,5 @@ build
 !*.f90
 !*.m
 !*.cmake
-
+# ignore build subdir
+build
