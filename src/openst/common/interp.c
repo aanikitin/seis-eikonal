@@ -1,6 +1,33 @@
 #include "openst/common/interp.h"
 
 
+OPENST_ERR OpenST_INTERP_3D_NearestNeighbor(OPENST_FLOAT *A, size_t NI, size_t NJ, size_t NK,
+                             OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                             OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
+                             OPENST_FLOAT *VAL){
+
+    size_t i,j,k;
+    OPENST_ERR errcode = OPENST_ERR_SUCCESS;
+
+
+    if ( OpenST_CRS_IsPointNotWithinBounds(PI, PJ, PK,
+                                        NI, NJ, NK,
+                                        HI, HJ, HK) ) {
+        errcode = OPENST_ERR_PARAM_INVALID;
+        goto EXIT;
+    }
+
+    i = (size_t) OPENST_FLOAT_ROUND(PI/HI);
+    j = (size_t) OPENST_FLOAT_ROUND(PJ/HJ);
+    k = (size_t) OPENST_FLOAT_ROUND(PK/HK);
+
+    *VAL = A[OPENST_MEMADR_3D(i,j,k,NI,NJ,NK)];
+
+EXIT:
+    return errcode;
+}
+
+
 OPENST_ERR OpenST_INTERP_3D(OPENST_FLOAT *A, size_t NI, size_t NJ, size_t NK,
                              OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
                              OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,

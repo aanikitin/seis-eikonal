@@ -1,5 +1,7 @@
-# Override GitHub language detection for *.m files
+# Override GitHub language detection
 *.m linguist-language=Matlab
+*.c linguist-language=C
+*.h linguist-language=C
 
 # Normalize line endings
 * text eol=lf

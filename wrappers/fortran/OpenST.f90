@@ -89,6 +89,26 @@
     END FUNCTION OpenST_INTERP_3D
     END INTERFACE
     
+    INTERFACE
+    INTEGER(C_INT) FUNCTION OpenST_INTERP_3D_NearestNeighbor(A,NI,NJ,NK, &
+        HI,HJ,HK,PI,PJ,PK,VAL) &
+        BIND(C, NAME='OpenST_INTERP_3D_NearestNeighbor')
+    use, intrinsic :: iso_c_binding
+    IMPLICIT NONE
+    TYPE (C_PTR), VALUE :: A
+    INTEGER (C_SIZE_T), VALUE :: NI
+    INTEGER (C_SIZE_T), VALUE :: NJ
+    INTEGER (C_SIZE_T), VALUE :: NK
+    REAL (C_DOUBLE), VALUE :: HI
+    REAL (C_DOUBLE), VALUE :: HJ
+    REAL (C_DOUBLE), VALUE :: HK
+    REAL (C_DOUBLE), VALUE :: PI
+    REAL (C_DOUBLE), VALUE :: PJ
+    REAL (C_DOUBLE), VALUE :: PK
+    TYPE (C_PTR), VALUE :: VAL
+    END FUNCTION OpenST_INTERP_3D_NearestNeighbor
+    END INTERFACE
+    
     CONTAINS
 
     SUBROUTINE OpenST_Fortran_PrintArr(MAT)

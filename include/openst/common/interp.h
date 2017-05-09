@@ -27,6 +27,12 @@ OPENST_API OPENST_ERR OpenST_INTERP_3D(OPENST_FLOAT *A,
                               OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
                               OPENST_FLOAT *VAL);
 
+OPENST_API OPENST_ERR OpenST_INTERP_3D_NearestNeighbor(OPENST_FLOAT *A,
+                                 size_t NI, size_t NJ, size_t NK,
+                                 OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
+                                 OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
+                                 OPENST_FLOAT *VAL);
+
 OPENST_API void OpenST_INTERP_Trilinear(OPENST_FLOAT *A,
                              size_t NI, size_t NJ, size_t NK,
                              OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
