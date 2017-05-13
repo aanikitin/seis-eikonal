@@ -10,7 +10,7 @@ OPENST_ERR OpenST_INTERP_3D_NearestNeighbor(OPENST_FLOAT *A, size_t NI, size_t N
     OPENST_ERR errcode = OPENST_ERR_SUCCESS;
 
 
-    if ( OpenST_CRS_IsPointNotWithinBounds(PI, PJ, PK,
+    if ( OpenST_CRS_IsPointNotWithinBounds_3D(PI, PJ, PK,
                                         NI, NJ, NK,
                                         HI, HJ, HK) ) {
         errcode = OPENST_ERR_PARAM_INVALID;
@@ -28,6 +28,30 @@ EXIT:
 }
 
 
+OPENST_ERR OpenST_INTERP_2D(OPENST_FLOAT *A, size_t NI, size_t NJ,
+                             OPENST_FLOAT HI, OPENST_FLOAT HJ,
+                             OPENST_FLOAT PI, OPENST_FLOAT PJ,
+                             OPENST_FLOAT *VAL){
+
+    OPENST_ERR errcode = OPENST_ERR_SUCCESS;
+
+    if ( OpenST_CRS_IsPointNotWithinBounds_2D(PI, PJ,
+                                        NI, NJ,
+                                        HI, HJ) ) {
+        errcode = OPENST_ERR_PARAM_INVALID;
+        goto EXIT;
+    }
+
+    OpenST_INTERP_Bilinear(A, NI, NJ,
+                            HI, HJ,
+                            PI, PJ,
+                            VAL);
+
+EXIT:
+    return errcode;
+}
+
+
 OPENST_ERR OpenST_INTERP_3D(OPENST_FLOAT *A, size_t NI, size_t NJ, size_t NK,
                              OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
                              OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
@@ -35,7 +59,7 @@ OPENST_ERR OpenST_INTERP_3D(OPENST_FLOAT *A, size_t NI, size_t NJ, size_t NK,
 
     OPENST_ERR errcode = OPENST_ERR_SUCCESS;
 
-    if ( OpenST_CRS_IsPointNotWithinBounds(PI, PJ, PK,
+    if ( OpenST_CRS_IsPointNotWithinBounds_3D(PI, PJ, PK,
                                         NI, NJ, NK,
                                         HI, HJ, HK) ) {
         errcode = OPENST_ERR_PARAM_INVALID;
@@ -49,6 +73,33 @@ OPENST_ERR OpenST_INTERP_3D(OPENST_FLOAT *A, size_t NI, size_t NJ, size_t NK,
 
 EXIT:
     return errcode;
+}
+
+
+void OpenST_INTERP_Bilinear(OPENST_FLOAT *A, size_t NI, size_t NJ,
+                             OPENST_FLOAT HI, OPENST_FLOAT HJ,
+                             OPENST_FLOAT PI, OPENST_FLOAT PJ,
+                             OPENST_FLOAT *VAL){
+
+    size_t ii[2], ji[2];
+    OPENST_FLOAT ic[2], jc[2];
+    int interp_i, interp_j, interp_dims;
+
+    OpenST_INTERP_Bilinear_Neighboors(
+        HI, HJ,
+        PI, PJ,
+        ii, ji,
+        ic, jc,
+        &interp_i, &interp_j, &interp_dims);
+
+    OpenST_INTERP_Bilinear_Compute(
+        A,
+        NI, NJ,
+        PI, PJ,
+        ii, ji,
+        ic, jc,
+        interp_i, interp_j, interp_dims, VAL);
+
 }
 
 
@@ -148,6 +199,39 @@ void OpenST_INTERP_Trilinear_Formula(OPENST_FLOAT *f,
 }
 
 
+OPENST_API void OpenST_INTERP_Bilinear_Neighboors(
+    OPENST_FLOAT HI, OPENST_FLOAT HJ,
+    OPENST_FLOAT PI, OPENST_FLOAT PJ,
+    size_t ii[2], size_t ji[2],
+    OPENST_FLOAT ic[2], OPENST_FLOAT jc[2],
+    int *interp_i, int *interp_j, int *interp_dims){
+
+    *interp_i = OpenST_FLOAT_GetNeighboorSizeT(PI / HI, &ii[0], &ii[1]);
+    *interp_j = OpenST_FLOAT_GetNeighboorSizeT(PJ / HJ, &ji[0], &ji[1]);
+
+    *interp_dims = 0;
+
+    if (*interp_i) {
+        ++(*interp_dims);
+        ic[0] = (OPENST_FLOAT) ii[0] * HI;
+        ic[1] = (OPENST_FLOAT) ii[1] * HI;
+    } else {
+        ic[0] = PI;
+        ic[1] = PI;
+    }
+
+    if (*interp_j) {
+        ++(*interp_dims);
+        jc[0] = (OPENST_FLOAT) ji[0] * HJ;
+        jc[1] = (OPENST_FLOAT) ji[1] * HJ;
+    } else {
+        jc[0] = PJ;
+        jc[1] = PJ;
+    }
+
+}
+
+
 OPENST_API void OpenST_INTERP_Trilinear_Neighboors(
     OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK,
     OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
@@ -186,6 +270,56 @@ OPENST_API void OpenST_INTERP_Trilinear_Neighboors(
     } else {
         kc[0] = PK;
         kc[1] = PK;
+    }
+
+}
+
+
+OPENST_API void OpenST_INTERP_Bilinear_Compute(
+    OPENST_FLOAT *A,
+    size_t NI, size_t NJ,
+    OPENST_FLOAT PI, OPENST_FLOAT PJ,
+    size_t ii[2], size_t ji[2],
+    OPENST_FLOAT ic[2], OPENST_FLOAT jc[2],
+    int interp_i, int interp_j, int interp_dims,
+    OPENST_FLOAT *VAL){
+
+    if(interp_dims == 0){
+
+        *VAL = A[OPENST_MEMADR_2D(ii[0], ji[0], NI, NJ)];
+
+    } else {
+
+        if (interp_dims == 2) {
+
+            OpenST_INTERP_Bilinear_Formula(VAL, PI, PJ,
+                    A[OPENST_MEMADR_2D(ii[0], ji[0], NI, NJ)],
+                    A[OPENST_MEMADR_2D(ii[0], ji[1], NI, NJ)],
+                    A[OPENST_MEMADR_2D(ii[1], ji[0], NI, NJ)],
+                    A[OPENST_MEMADR_2D(ii[1], ji[1], NI, NJ)],
+                    ic[0], jc[0],
+                    ic[1], jc[1]);
+
+        } else if (interp_dims == 1) {
+
+            if (interp_i) {
+
+                OpenST_INTERP_Linear_Formula(VAL, PI,
+                        A[OPENST_MEMADR_2D(ii[0], ji[0], NI, NJ)],
+                        A[OPENST_MEMADR_2D(ii[1], ji[0], NI, NJ)],
+                        ic[0], ic[1]);
+
+            } else if (interp_j) {
+
+                OpenST_INTERP_Linear_Formula(VAL, PJ,
+                        A[OPENST_MEMADR_2D(ii[0], ji[0], NI, NJ)],
+                        A[OPENST_MEMADR_2D(ii[0], ji[1], NI, NJ)],
+                        jc[0], jc[1]);
+
+            }
+
+        }
+
     }
 
 }

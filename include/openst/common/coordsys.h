@@ -26,9 +26,13 @@ OPENST_API OPENST_ERR OpenST_CRS_Cart2IndRound(OPENST_FLOAT coord,
 OPENST_API OPENST_ERR OpenST_CRS_Cart2Ind(OPENST_FLOAT coord,
                                           OPENST_FLOAT cell_size, size_t *ind);
 
-OPENST_API int OpenST_CRS_IsPointNotWithinBounds(OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
+OPENST_API int OpenST_CRS_IsPointNotWithinBounds_3D(OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
                                        size_t NI, size_t NJ, size_t NK,
                                        OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK);
+
+OPENST_API int OpenST_CRS_IsPointNotWithinBounds_2D(OPENST_FLOAT PI, OPENST_FLOAT PJ,
+                                       size_t NI, size_t NJ,
+                                       OPENST_FLOAT HI, OPENST_FLOAT HJ);
 
 #ifdef __cplusplus
 }

@@ -30,7 +30,7 @@ OPENST_ERR OpenST_BRT3D_Step(OPENST_FLOAT *T, OPENST_FLOAT *V,
     OPENST_FLOAT gradi, gradj, gradk, grad_length;
     OPENST_FLOAT vel, vali, valj, valk;
 
-    if( OpenST_CRS_IsPointNotWithinBounds(CURI, CURJ, CURK,
+    if( OpenST_CRS_IsPointNotWithinBounds_3D(CURI, CURJ, CURK,
                                        NI, NJ, NK,
                                        HI, HJ, HK) ){
         errcode = OPENST_ERR_ALG_OUT_OF_BOUNDS;

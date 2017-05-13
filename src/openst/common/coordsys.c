@@ -36,7 +36,7 @@ OPENST_ERR OpenST_CRS_Cart2Ind(OPENST_FLOAT coord, OPENST_FLOAT cell_size, size_
 
 
 //TODO: change to stored domain bounds in the future release
-int OpenST_CRS_IsPointNotWithinBounds(OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
+int OpenST_CRS_IsPointNotWithinBounds_3D(OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_FLOAT PK,
                                        size_t NI, size_t NJ, size_t NK,
                                        OPENST_FLOAT HI, OPENST_FLOAT HJ, OPENST_FLOAT HK){
     int il, ih, jl, jh, kl, kh;
@@ -51,4 +51,20 @@ int OpenST_CRS_IsPointNotWithinBounds(OPENST_FLOAT PI, OPENST_FLOAT PJ, OPENST_F
     kh = OpenST_FLOAT_DefinitelyGreater(PK, ((OPENST_FLOAT)(NK - 1) * HK), DBL_EPSILON);
 
     return (il || ih || jl || jh || kl || kh);
+}
+
+
+//TODO: change to stored domain bounds in the future release
+int OpenST_CRS_IsPointNotWithinBounds_2D(OPENST_FLOAT PI, OPENST_FLOAT PJ,
+                                       size_t NI, size_t NJ,
+                                       OPENST_FLOAT HI, OPENST_FLOAT HJ){
+    int il, ih, jl, jh;
+
+    il = OpenST_FLOAT_DefinitelyLess(PI, 0, DBL_EPSILON);
+    ih = OpenST_FLOAT_DefinitelyGreater(PI, ((OPENST_FLOAT)(NI - 1) * HI), DBL_EPSILON);
+
+    jl = OpenST_FLOAT_DefinitelyLess(PJ, 0, DBL_EPSILON);
+    jh = OpenST_FLOAT_DefinitelyGreater(PJ, ((OPENST_FLOAT)(NJ - 1) * HJ), DBL_EPSILON);
+
+    return (il || ih || jl || jh);
 }

@@ -165,7 +165,7 @@ int main(int argc, char *argv[]){
     printf("V[%zu,%zu,%zu]: %e\n",NI-2,NJ-1,NK-1,V[OPENST_MEMADR_3D(NI-2,NJ-1,NK-1,NI,NJ,NK)]);
 #endif
 
-    if(OpenST_CRS_IsPointNotWithinBounds(SRCI,SRCJ,SRCK,NI,NJ,NK,HI,HJ,HK)){
+    if(OpenST_CRS_IsPointNotWithinBounds_3D(SRCI,SRCJ,SRCK,NI,NJ,NK,HI,HJ,HK)){
         fprintf(stderr,"Error: SRC is not within domain bounds\n");
         errcode = OPENST_ERR_PARAM_INVALID;
         goto EXIT;
